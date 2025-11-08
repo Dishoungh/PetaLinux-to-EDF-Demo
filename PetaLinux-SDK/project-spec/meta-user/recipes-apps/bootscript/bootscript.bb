@@ -14,6 +14,8 @@ inherit systemd
 SYSTEMD_SERVICE:${PN} = "bootscript.service"
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
+RDEPENDS:${PN} = "bash"
+
 S = "${WORKDIR}"
 
 SRC_URI += "file://bootscript.service"
@@ -22,6 +24,6 @@ SRC_URI += "file://bootscript.sh"
 do_install() {
 	install -d ${D}${systemd_system_unitdir}
 	install -m 0644 ${S}/bootscript.service ${D}${systemd_system_unitdir}
-	install -d ${D}${sysconfdir}/init.d/
-	install -m 0755 ${S}/bootscript.sh ${D}/${sysconfdir}/init.d/
+	install -d ${D}${bindir}
+	install -m 0755 ${S}/bootscript.sh ${D}/${bindir}
 }

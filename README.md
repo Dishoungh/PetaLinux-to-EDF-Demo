@@ -127,6 +127,10 @@ To build and package the project:
 - `petalinux-build`
 - `bootgen -arch zynq -image ./bootgen.bif -o ./images/linux/BOOT.BIN -w`
 
+My bootscript output looks like this:
+
+![Bootscript Output](./Images/Output_Bootscript.png)
+
 ## Yocto (PetaLinux)
 
 **TBD**

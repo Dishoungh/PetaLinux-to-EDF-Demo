@@ -462,7 +462,7 @@ CONFIG_mtd-utils=y
 #
 # can-utils 
 #
-CONFIG_can-utils=y
+# CONFIG_can-utils is not set
 # CONFIG_can-utils-dbg is not set
 # CONFIG_can-utils-dev is not set
 

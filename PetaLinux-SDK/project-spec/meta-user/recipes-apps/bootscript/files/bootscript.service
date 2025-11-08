@@ -1,9 +1,11 @@
 [Unit]
 Description=simple-script
+Requires=network.target
+After=network.target dropbear@.service
   
 [Service]
 ExecStart=/usr/bin/bootscript.sh
-StandardOutput=journal+console
+StandardOutput=console
   
 [Install]
 WantedBy=multi-user.target

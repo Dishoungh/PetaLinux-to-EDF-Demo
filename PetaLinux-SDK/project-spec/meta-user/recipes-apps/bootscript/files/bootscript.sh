@@ -2,10 +2,6 @@
 
 echo -e "######## Bootscript Start! ########"
 
-# Initialize Ethernet
-/etc/init.d/networking start
-echo "Started Ethernet"
-
 # Mount SD Card
 mkdir -p /mnt/sd
 mount /dev/mmcblk0p1 /mnt/sd
@@ -42,7 +38,7 @@ do
     poke 0x41220000 $rgb
     echo "Wrote $rgb to 0x41220000"
 
-    sleep 2
+    sleep 1
 done
 
 echo -e "######## Bootscript End! ########"
