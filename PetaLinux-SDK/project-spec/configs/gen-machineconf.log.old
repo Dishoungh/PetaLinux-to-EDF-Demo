@@ -1,31 +1,31 @@
-2025-11-08 21:00:10,257 - [INFO] Getting Platform info from HW file
-2025-11-08 21:00:10,257 - [DEBUG] Using the soc_family specified by user:zynq
-2025-11-08 21:00:10,258 - [DEBUG] LOPPER_DTC_FLAGS="-b 0 -@" /opt/Xilinx/2025.1/PetaLinux/sysroots/x86_64-petalinux-linux/usr/bin/lopper -O /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs -f --enhanced   -i /opt/Xilinx/2025.1/PetaLinux/sysroots/x86_64-petalinux-linux/usr/lib/python3.12/site-packages/lopper/lops/lop-machine-name.dts /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/hw-description/system-top.dts 
-2025-11-08 21:00:10,565 - [DEBUG] 
+2025-11-08 22:09:02,929 - [INFO] Getting Platform info from HW file
+2025-11-08 22:09:02,929 - [DEBUG] Using the soc_family specified by user:zynq
+2025-11-08 22:09:02,930 - [DEBUG] LOPPER_DTC_FLAGS="-b 0 -@" /opt/Xilinx/2025.1/PetaLinux/sysroots/x86_64-petalinux-linux/usr/bin/lopper -O /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs -f --enhanced   -i /opt/Xilinx/2025.1/PetaLinux/sysroots/x86_64-petalinux-linux/usr/lib/python3.12/site-packages/lopper/lops/lop-machine-name.dts /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/hw-description/system-top.dts 
+2025-11-08 22:09:03,233 - [DEBUG] 
 xlnx-arty-z7-20 7z020 Xilinx Zynq
 
 
 
-2025-11-08 21:00:10,566 - [DEBUG] LOPPER_DTC_FLAGS="-b 0 -@" /opt/Xilinx/2025.1/PetaLinux/sysroots/x86_64-petalinux-linux/usr/bin/lopper -O /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs -f --enhanced   -i /opt/Xilinx/2025.1/PetaLinux/sysroots/x86_64-petalinux-linux/usr/lib/python3.12/site-packages/lopper/lops/lop-xilinx-id-cpus.dts /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/hw-description/system-top.dts 
-2025-11-08 21:00:10,945 - [DEBUG] 
+2025-11-08 22:09:03,234 - [DEBUG] LOPPER_DTC_FLAGS="-b 0 -@" /opt/Xilinx/2025.1/PetaLinux/sysroots/x86_64-petalinux-linux/usr/bin/lopper -O /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs -f --enhanced   -i /opt/Xilinx/2025.1/PetaLinux/sysroots/x86_64-petalinux-linux/usr/lib/python3.12/site-packages/lopper/lops/lop-xilinx-id-cpus.dts /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/hw-description/system-top.dts 
+2025-11-08 22:09:03,612 - [DEBUG] 
 # global core_number no-domain cpu_name
 arm,cortex-a9 0 None ps7_cortexa9_0 None
 arm,cortex-a9 1 None ps7_cortexa9_1 None
 
 
 
-2025-11-08 21:00:10,953 - [DEBUG] Hardware Configuration:
-2025-11-08 21:00:10,953 - [DEBUG] MODEL       = "Xilinx Zynq"
-2025-11-08 21:00:10,953 - [DEBUG] MACHINE     = "xlnx-arty-z7-20"
-2025-11-08 21:00:10,953 - [DEBUG] DEVICE_ID   = "7z020"
-2025-11-08 21:00:10,953 - [DEBUG] SOC_FAMILY  = "zynq"
-2025-11-08 21:00:10,953 - [DEBUG] SOC_VARIANT = ""
-2025-11-08 21:00:10,953 - [DEBUG] CPUs:
-2025-11-08 21:00:10,953 - [DEBUG] 	= ps7_cortexa9_0 arm cortex-a9 0
-2025-11-08 21:00:10,953 - [DEBUG] 	= ps7_cortexa9_1 arm cortex-a9 1
-2025-11-08 21:00:10,953 - [INFO] Silentconfig project
-2025-11-08 21:00:10,954 - [DEBUG] Running CMD: yes "" | env KCONFIG_CONFIG=/home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/config conf /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/configs/Kconfig
-2025-11-08 21:00:10,958 - [DEBUG] *
+2025-11-08 22:09:03,619 - [DEBUG] Hardware Configuration:
+2025-11-08 22:09:03,619 - [DEBUG] MODEL       = "Xilinx Zynq"
+2025-11-08 22:09:03,619 - [DEBUG] MACHINE     = "xlnx-arty-z7-20"
+2025-11-08 22:09:03,619 - [DEBUG] DEVICE_ID   = "7z020"
+2025-11-08 22:09:03,619 - [DEBUG] SOC_FAMILY  = "zynq"
+2025-11-08 22:09:03,619 - [DEBUG] SOC_VARIANT = ""
+2025-11-08 22:09:03,619 - [DEBUG] CPUs:
+2025-11-08 22:09:03,620 - [DEBUG] 	= ps7_cortexa9_0 arm cortex-a9 0
+2025-11-08 22:09:03,620 - [DEBUG] 	= ps7_cortexa9_1 arm cortex-a9 1
+2025-11-08 22:09:03,620 - [INFO] Silentconfig project
+2025-11-08 22:09:03,620 - [DEBUG] Running CMD: yes "" | env KCONFIG_CONFIG=/home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/config conf /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/configs/Kconfig
+2025-11-08 22:09:03,625 - [DEBUG] *
 * PetaLinux System Configuration
 *
 ZYNQ Configuration (SYSTEM_ZYNQ) [Y/?] y
@@ -247,9 +247,9 @@ user layer 0 (USER_LAYER_0) []
 #
 # configuration written to /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/config
 #
-2025-11-08 21:00:10,992 - [INFO] Silentconfig rootfs
-2025-11-08 21:00:10,992 - [DEBUG] Running CMD: yes "" | env KCONFIG_CONFIG=/home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/rootfs_config conf /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/rootfsconfigs/Kconfig
-2025-11-08 21:00:11,002 - [DEBUG] *
+2025-11-08 22:09:03,659 - [INFO] Silentconfig rootfs
+2025-11-08 22:09:03,660 - [DEBUG] Running CMD: yes "" | env KCONFIG_CONFIG=/home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/rootfs_config conf /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/rootfsconfigs/Kconfig
+2025-11-08 22:09:03,669 - [DEBUG] *
 * Configuration
 *
 *
@@ -3548,5 +3548,5 @@ Add Users to Sudo users (ADD_USERS_TO_SUDOERS) [petalinux]
 #
 # configuration written to /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/rootfs_config
 #
-2025-11-08 21:00:11,008 - [INFO] Generating configuration files
-2025-11-08 21:00:11,020 - [DEBUG] Shutting down bitbake
+2025-11-08 22:09:03,676 - [INFO] Generating configuration files
+2025-11-08 22:09:03,688 - [DEBUG] Shutting down bitbake

@@ -1,5 +1,9 @@
 /include/ "system-conf.dtsi"
 / {
+    // Digilent Arty Z7-20
+    model = "Zynq Arty Z7 Development Board";
+    compatible = "digilent,zynq-artyz7", "xlnx,zynq-7000";
+
     chosen {
         bootargs = "console=ttyPS0,115200 earlycon earlyprintk clk_ignore_unused irqpoll cpuidle.off=1";
         stdout-path = "serial0:115200n8";
