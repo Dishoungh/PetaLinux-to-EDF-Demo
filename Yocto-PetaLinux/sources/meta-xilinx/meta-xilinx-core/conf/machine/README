@@ -1,0 +1,212 @@
+Xilinx Machines
+===============
+
+Xilinx uses an inheritence model to define defaults in a heirarchical
+model.  This allows for machines to include other machines and then
+override defaults.
+
+For example, a carrier board with a system on module using a zynqmp ev
+can be implements as:
+
+k26_kv -> k26 -> zynqmp-ev-generic -> zynqmp-generic
+
+The above needs to result MACHINEOVERRIDES and PACKAGE_ARCHS that include
+all 4 machines.  This facilitates sstate-cache and binary distribution
+package re-use.
+
+To accomplish this, each machine.conf file should contain the following
+preamble and postamble.  This ensures that the machine overrides and
+package archs can be extended by another machine configuration file.
+
+#### Preamble
+MACHINEOVERRIDES =. "${@['', '<machine>:']['<machine>' != '${MACHINE}']}"
+#### Regular settings follow
+
+
+#### No additional settings should be after the Postamble
+#### Postamble
+PACKAGE_EXTRA_ARCHS:append = "${@['', ' <machine_arch>']['<machine>' != "${MACHINE}"]}"
+
+
+Between the Preamble and Postamble, you should "require" the machine
+configuration that your machine is based on.  After the 'require' is where
+most variables should be defined.  (See variable requirements at the end
+of this document.)  This will allow you to extend other configurations
+to match your specific requirements.  Values should be set using = and
++=, but not :append or :prepend.  This allows a machine inheriting your
+machine file to add or overwrite the value easily.  Such as:
+
+Typical case example (my-example.conf):
+
+#### Preamble
+MACHINEOVERRIDES =. "${@['', 'my-example:']['my-example' != '${MACHINE}']}"
+#### Regular settings follow
+
+require conf/machine/zynqmp-generic.conf
+
+MACHINE_FEATURES += "pci"
+
+#### No additional settings should be after the Postamble
+#### Postamble
+PACKAGE_EXTRA_ARCHS:append = "${@['', ' my_example']['my-example' != "${MACHINE}"]}"
+
+
+A few variable must be set BEFORE the requires, DEFAULTTUNE for example.
+(See variable requirements at the end of this document.)  Usually ?= is the
+correct way to set these, as the machine inheriting your machine may need
+to override the value.
+
+Example of defaulttune override:
+
+#### Preamble
+MACHINEOVERRIDES =. "${@['', 'my-example:']['my-example' != '${MACHINE}']}"
+#### Regular settings follow
+
+DEFAULTTUNE ?= "aarch64"
+
+require conf/machine/zynqmp-generic.conf
+
+MACHINE_FEATURES += "pci"
+
+#### No additional settings should be after the Postamble
+#### Postamble
+PACKAGE_EXTRA_ARCHS:append = "${@['', ' my_example']['my-example' != "${MACHINE}"]}"
+
+
+Additionally, for microblaze you may need to define a specific microblaze
+tune-features.  Like DEFAULTTUNE, this needs to be set before the require line.
+
+Example of microblaze tune override:
+
+#### Preamble
+MACHINEOVERRIDES =. "${@['', 'my-example:']['my-example' != '${MACHINE}']}"
+#### Regular settings follow
+
+TUNE_FEATURES:tune-microblaze ?= "microblaze v8.50 barrel-shift reorder pattern-compare divide-hard multiply-high fpu-hard"
+
+require conf/machine/microblaze-generic.conf
+
+SERIAL_CONSOLE = "115200,ttyUL0"
+
+#### No additional settings should be after the Postamble
+#### Postamble
+PACKAGE_EXTRA_ARCHS:append = "${@['', ' my_example']['my-example' != "${MACHINE}"]}"
+
+
+Variable Requirements
+=====================
+
+The question has been raised why we don't use ?= or ??= for all default
+values, instead we rely on specific ordering of the override components?
+
+This is done intentionally, as it forces the user to create a new machine
+configuration file to extend their system.  In the past, it was common
+for people to just set values in their local.conf file, but this lead to
+problems reproducing success and failures, as well as trying to support
+the overall configuration.  Moving to a model where most variables must
+be added to, or replaced after the require has simplified this model.
+There are a few exception, these will be covered first.
+
+The following variables must be set using ?= BEFORE the 'require' line
+of the inherited base machine .conf file.  This is due to them being
+used to control inclusion of tune data.
+
+DEFAULTTUNE - Default Tune for this machine
+
+TUNEFILE[<tune>] - The tune file, based on DEFAULTTUNE, to load
+
+For DEFAULTTUNE, see the Yocto Project documentation.  For
+TUNEFILE[<tune>] see include/soc-tune-include.inc for the defined ones.
+
+
+The following variables should be set using ?= BEFORE the 'require' line
+of the inherited base machine .conf file, if the user may override them.
+If the values are fixed, then it should be set after the requires per
+the next section.
+
+These are common values a user may want to override and will let the user
+easiy make a local change, if allowed by the machine .conf:
+
+UBOOT_MACHINE - The defconfig for u-boot.  (Note, this may be an error TBD).
+
+
+The following variables must be set AFTER the 'require' line, using '='
+or '+='/'=+' as required.  Using ':append', ':prepend', or ':remove' will
+prevent an inheriting machine from overriding that value.  Similarly
+you should not use :<machine> override values for the same reason.  Note,
+not every machine file will have all of these variables, only the ones
+you need to override should be set.
+
+Variables set before required inclusion file:
+Variables that changes based on hw design or board specific requirement must be
+set before required inclusion file else pre-expansion value defined in generic
+machine conf will be set. This way user can also override these variables from
+local.conf
+
+System wide setting:
+TUNE_FEATURES:tune-<tune> - Specific tune features
+
+XILINX_WITH_ESW = "xsct" or "sdt" - Specify xsct or sdt workflow
+
+external-hdf recipe from meta-xilinx-tools:
+XILINX_XSCT_VERSION - Version of the XSCT tool and associated ESW software
+HDF_URI - URL for the .xsa file
+HDF_URI[sha256sum] - sha256sum of the .xsa
+
+sdt-artifacts recipe from meta-xilinx-standalone-sdt:
+SDT_URI - URI for the system device tree artifacts (usually a tarball)
+SDT_URI[sha256sum] - sha256sum of the SDT artifacts file
+SDT_URI[S] - the 'S' (source) directory where the artifacts are extracted
+
+fs-boot recipe from meta-xilinx-tools:
+YAML_SERIAL_CONSOLE_STDIN:pn-fs-boot - YAML based uart stdin configuration for
+MicroBlaze. Example: axi_uartlite_0 or axi_uart16550_0 etc,.
+YAML_SERIAL_CONSOLE_STDOUT:pn-fs-boot - YAML based uart stdout configuration for
+MicroBlaze. Example: axi_uartlite_0 or axi_uart16550_0 etc,.
+YAML_MAIN_MEMORY_CONFIG:pn-fs-boot - YAML based DDR4 or MIG configuration for
+MicroBlaze. Example: DDR4_0 or MIG_7SERIES_0 etc,.
+YAML_FLASH_MEMORY_CONFIG:pn-fs-boot - YAML based flash configuration for
+MicroBlaze. Example: axi_emc_0 or axi_quad_spi_0 etc,.
+XSCTH_PROC:pn-fs-boot - Processor IP used while configuring embeddedsw compoments.
+Example: microblaze_0 or microblaze_1 etc,.
+
+fsbl-firmware recipe from meta-xilinx-tools:
+YAML_SERIAL_CONSOLE_STDIN:pn-fsbl-firmware - YAML based FSBL uart stdin configuration
+for Zynq-7000 and ZynqMP devices.
+YAML_SERIAL_CONSOLE_STDOUT:pn-fsbl-firmware - YAML based FSBL uart stdout configuration
+for Zynq-7000 and ZynqMP devices.
+
+pmu-firmware recipe from meta-xilinx-tools:
+YAML_SERIAL_CONSOLE_STDIN:pn-pmu-firmware - YAML based PMUFW uart stdin configuration
+for ZynqMP devices.
+YAML_SERIAL_CONSOLE_STDOUT:pn-pmu-firmware - YAML based PMUFW uart stdout configuration
+for ZynqMP devices.
+
+plm-firmware recipe from meta-xilinx-tools:
+YAML_SERIAL_CONSOLE_STDIN:pn-plm-firmware - YAML based PLM uart stdin configuration
+for Versal devices.
+YAML_SERIAL_CONSOLE_STDOUT:pn-fplmsbl-firmware - YAML based PLM uart stdout
+configuration for Versal devices.
+
+device-tree recipe from meta-xilinx-tools:
+YAML_CONSOLE_DEVICE_CONFIG:pn-device-tree - YAML based uart console configuration
+for all device families. Example: axi_uartlite_0 or psu_uart_0 etc,.
+YAML_MAIN_MEMORY_CONFIG:pn-device-tree - YAML based memory configuration for all
+device families. Example: DDR4_0 or PS7_DDR_0 or PSU_DDR_0 etc,.
+XSCTH_PROC:pn-device-tree - Processor IP used while configuring device-tree
+compoments. Example: microblaze_0 or microblaze_1 etc,.
+YAML_DT_BOARD_FLAGS:pn-device-tree - YAML based configuration for setting eval
+board specific dtsi files available in DTG repo.
+
+arm-trusted-firmware recipe from meta-xilinx-core:
+ATF_CONSOLE - Uart console configuration for all aarch64 device families.
+Example: pl011 or cadence or cadence1 etc,.
+TFA_BL33_LOAD - BL33 preloadded base address to EXTRA_OEMAKE for aarch64.
+
+u-boot-xlnx recipe from meta-xilinx-core:
+UBOOT_MACHINE - Name of the defconfig to use
+HAS_PLATFORM_INIT - List of defconfig files available for u-boot only for SPL boot.
+
+u-boot-xlnx-scr recipe from meta-xilinx-core:
+DDR_BASEADDR - Base address for DDR used for loading the images from u-boot env.
+SKIP_APPEND_BASEADDR - Skip appending ${DDR_BASEADDR} for image offsets.

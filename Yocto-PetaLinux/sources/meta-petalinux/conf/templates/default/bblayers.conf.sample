@@ -1,0 +1,47 @@
+BBPATH = "${TOPDIR}"
+BBFILES ?= ""
+
+BBLAYERS ?= " \
+  ##OEROOT##/meta \
+  ##OEROOT##/meta-poky \
+  ##OEROOT##/../meta-xilinx/meta-microblaze \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-core \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-standalone \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-standalone-sdt \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-bsp \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-vendor \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-virtualization \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-mali400 \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-demos \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-multimedia \
+  ##OEROOT##/../meta-xilinx-tools \
+  ##OEROOT##/../meta-amd-adaptive-socs/meta-amd-adaptive-socs-core \
+  ##OEROOT##/../meta-amd-adaptive-socs/meta-amd-adaptive-socs-bsp \
+  ##OEROOT##/../meta-arm/meta-arm \
+  ##OEROOT##/../meta-arm/meta-arm-toolchain \
+  ##OEROOT##/../meta-openembedded/meta-perl \
+  ##OEROOT##/../meta-openembedded/meta-python \
+  ##OEROOT##/../meta-openembedded/meta-filesystems \
+  ##OEROOT##/../meta-openembedded/meta-gnome \
+  ##OEROOT##/../meta-openembedded/meta-multimedia \
+  ##OEROOT##/../meta-openembedded/meta-networking \
+  ##OEROOT##/../meta-openembedded/meta-webserver \
+  ##OEROOT##/../meta-openembedded/meta-xfce \
+  ##OEROOT##/../meta-openembedded/meta-initramfs \
+  ##OEROOT##/../meta-openembedded/meta-oe \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-contrib \
+  ##OEROOT##/../meta-virtualization \
+  ##OEROOT##/../meta-kria \
+  ##OEROOT##/../meta-security \
+  ##OEROOT##/../meta-security/meta-tpm \
+  ##OEROOT##/../meta-xilinx-tsn \
+  ##OEROOT##/../meta-petalinux \
+  ##OEROOT##/../meta-openamp \
+  ##OEROOT##/../meta-qt5 \
+  ##OEROOT##/../meta-aws \
+  ##OEROOT##/../meta-jupyter \
+  ##OEROOT##/../meta-rauc \
+  ##OEROOT##/../meta-ros/meta-ros-common \
+  ##OEROOT##/../meta-ros/meta-ros2 \
+  ##OEROOT##/../meta-ros/meta-ros2-jazzy \
+"

@@ -1,0 +1,202 @@
+# Copyright (C) 2021-2022, Xilinx, Inc.  All rights reserved.
+# Copyright (C) 2022, Advanced Micro Devices, Inc.  All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+#
+ps7_cortexa9:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - const: arm,cortex-a9
+    device_type: processor
+
+psu_cortexa53:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - const: arm,cortex-a53
+    device_type: processor
+
+psv_cortexa72:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - const: arm,cortex-a72
+    device_type: processor
+
+psx_cortexa78:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - const: arm,cortex-a78
+    device_type: processor
+
+microblaze:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - enum:
+              - pmu-microblaze
+              - xlnx,microblaze-11.0
+              - xlnx,microblaze
+              - pmc-microblaze
+              - psm-microblaze
+    device_type: processor
+
+ps7_ddr:
+    device_type: memory
+
+psu_ddr:
+    device_type: memory
+
+axi_emc:
+    device_type: memory
+
+psv_sbsauart:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - enum:
+              - arm,pl011
+              - arm,sbsa-uart
+    device_type: serial
+    baudrate_editable: y
+
+psu_uart:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - enum:
+              - cdns,uart-r1p12
+              - xlnx,zynqmp-uart
+            - enum:
+              - cdns,uart-r1p8
+              - xlnx,xuartps
+    device_type: serial
+    baudrate_editable: y
+
+psu_ethernet:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - enum:
+              - xlnx,zynqmp-gem
+              - cdns,zynqmp-gem
+    device_type: ethernet
+
+psv_ethernet:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - enum:
+              - xlnx,versal-gem
+              - cdns,versal-gem
+              - cdns,gem
+    device_type: ethernet
+
+
+psv_pmc_sd:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - enum:
+              - xlnx,versal-8.9a
+              - arasan,sdhci-8.9a
+    device_type: sd
+
+psu_sd:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - enum:
+              - xlnx,zynqmp-8.9a
+              - arasan,sdhci-8.9a
+    device_type: sd
+
+
+psu_qspi:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+            - enum:
+              - xlnx,zynqmp-qspi-1.0
+            - enum:
+              - xlnx,versal-qspi-1.0
+    device_type: flash
+    flash_type: spi
+    flash_prefix: qspi
+
+psv_pmc_qspi:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+             - enum:
+               - xlnx,versal-qspi-1.0
+             - enum:
+               - xlnx,zynqmp-qspi-1.0
+    device_type: flash
+    flash_type: spi
+    flash_prefix: qspi
+
+psv_pmc_qspi_ospi:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+             - enum:
+               - xlnx,versal-ospi-1.0
+             - enum:
+               - xlnx,zynqmp-ospi-1.0
+    device_type: flash
+    flash_type: spi
+    flash_prefix: spi0
+
+psx_pmc_qspi:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+             - enum:
+               - xlnx,versal-qspi-1.0
+             - enum:
+               - xlnx,zynqmp-qspi-1.0
+    device_type: flash
+    flash_type: spi
+    flash_prefix: qspi
+
+psx_pmc_qspi_ospi:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+             - enum:
+               - xlnx,versal-ospi-1.0
+             - enum:
+               - xlnx,zynqmp-ospi-1.0
+    device_type: flash
+    flash_type: spi
+    flash_prefix: spi0
+
+axi_quad_spi:
+    properties:
+      compatible:
+        OneOf:
+          - items:
+             - enum:
+               - xlnx,xps-spi-2.00.a
+    device_type: flash
+    flash_type: spi
+    flash_prefix: spi0
