@@ -26,5 +26,8 @@ PetaLinux-SDK/components/plnx_workspace
 PetaLinux-SDK/components/yocto
 
 # Yocto-PetaLinux
+Yocto-PetaLinux/build/*
+!Yocto-PetaLinux/build/build-script.sh
+!Yocto-PetaLinux/build/conf
 
 # Yocto-EDF

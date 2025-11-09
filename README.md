@@ -1,5 +1,5 @@
 # PetaLinux-to-EDF-Demo
-This project will document transitioning a simple FPGA project from PetaLinux to a more native Yocto flow (**start to finish**).
+This project will *thoroughly* document transitioning a simple FPGA project from PetaLinux to a more native Yocto flow (**start to finish**).
 
 ## Overview
 
@@ -90,6 +90,7 @@ After creating the simple Vivado design, I'm going to create an **INITRAMFS-base
 First, I create the project:
 
 - `petalinux-create project --template zynq --name PetaLinux-SDK`
+- `cd ./PetaLinux-SDK`
 
 Next, I import the SDT into the PetaLinux project:
 
@@ -131,9 +132,88 @@ My bootscript output looks like this:
 
 ![Bootscript Output](./Images/Output_Bootscript.png)
 
+**Warning: For SDT flow, I had to explicitly specify the board I was working with in my `system-user.dtsi`**
+
+![DT for SDT](./Images/Device_Tree_Mods_SDT_Flow.png)
+
 ## Yocto (PetaLinux)
 
-**TBD**
+Now that I finally got the PetaLinux SDK to work with the new SDT flow, we got a **working reference**. The goal here is to transition from PetaLinux to the new [AMD Embedded Development Framework](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/3250585601/AMD+Embedded+Development+Framework+EDF).
+
+This step is a little unnecessary but I think it will help the transition to EDF be a bit smoother. What I want to do is do the same thing I just did with the PetaLinux SDK except use the [Yocto Manifests repo](https://github.com/Xilinx/yocto-manifests).
+
+### Getting Started
+
+To start:
+- `cd ./Yocto-PetaLinux`
+- `repo init -u https://github.com/Xilinx/yocto-manifests.git -b rel-v2025.1`
+    - Say yes
+- `repo sync`
+- `source ./setupsdk`
+
+### Creating Custom Layer
+
+Next, I need to create my own layer to put stuff I'm going to place in my Linux image for my FPGA.
+
+- `bitbake-layers create-layer ../sources/meta-custom`
+- `bitbake-layers add-layer ../sources/meta-custom`
+
+I need to modify the bblayers.conf. By default, Yocto uses absolute paths which can be annoying when uploading Yocto projects to something like GitLab and different machines need to develop these projects.
+
+Yes, I know Yocto is not designed like this and I'm supposed to push changes to images on a remote sit (GitHub/GitLab/etc), but I'm not going to do it this way. Instead, I need to host the whole Yocto project except for the temporary build stuff of course.
+
+![BBLayer Mod](./Images/BBLayers_Change.png)
+
+### SDT Import
+
+After creating my custom layer, I edit the layer.conf to add dependencies and import the SDT:
+
+- `rm -rfv ../sources/meta-custom/recipes-example/`
+- `vim ../sources/meta-custom/conf/layer.conf`
+
+![Layer Configuration](./Images/Layer_Conf.png)
+
+- `gen-machine-conf parse-sdt --hw-description ../../SDT --machine-name arty-z7 --config-dir ../sources/meta-custom/conf/`
+    - Set `MACHINE = "arty-z7"` in *local.conf*
+
+### Project Configuration
+
+I put image settings and other things at the bottom of my *local.conf*
+
+### U-Boot Configuration
+
+- `bitbake virtual/bootloader -c menuconfig`
+- `bitbake virtual/bootloader -c diffconfig`
+- `cat ./tmp/work/arty_z7-amd-linux-gnueabi/u-boot-xlnx/2025.01-xilinx-v2025.1+git/fragment.cfg >> ../sources/meta-custom/recipes-bsp/u-boot/files/u-boot.cfg`
+- `bitbake virtual/bootloader -c cleansstate`
+
+### Kernel Configuration
+
+- `bitbake virtual/kernel -c menuconfig`
+- `bitbake virtual/kernel -c diffconfig`
+- `cat ./tmp/work/arty_z7-amd-linux-gnueabi/linux-xlnx/6.12.10+git/fragment.cfg >> ../sources/meta-custom/recipes-kernel/linux/files/kernel.cfg`
+- `bitbake virtual/kernel -c cleansstate`
+
+### Device Tree Configuration
+
+Fortunately, since we used the SDT flow, our reference device tree is already made in the SDT folder we exported to from Vivado.
+
+### Building and Packaging Project
+
+- Run `build-script.sh`
+    - Script calls `bitbake petalinux-image-minimal`
+    - Copies BOOT-arty-z7.bin as BOOT.BIN into *deployed-images*
+    - Copies boot.scr into *deployed-images*
+    - Copies fitImage as image.ub into *deployed-images*
+    - Copies system.dtb into *deployed-images*
+
+*To debloat image, look into Manifest file and use "IMAGE_INSTALL:remove"*
+
+### Boot Process
+
+- Copy BOOT.BIN, boot.scr, and image.ub to SD card
+
+**Image boot is successful!!!**
 
 ## Yocto (EDF)
 
