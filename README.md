@@ -151,6 +151,8 @@ To start:
 - `repo sync`
 - `source ./setupsdk`
 
+I removed the .git folders from the manifests. Yes, I know I'm not supposed to do this, but I don't care lol.
+
 ### Creating Custom Layer
 
 Next, I need to create my own layer to put stuff I'm going to place in my Linux image for my FPGA.
