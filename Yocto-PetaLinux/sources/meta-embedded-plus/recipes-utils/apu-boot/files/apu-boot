@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+
+if [ -e /sys/bus/platform/devices/rpu-channel/ready ]; then
+	echo 1 > /sys/bus/platform/devices/rpu-channel/ready
+
+	# Stop sytemd-journald service to have kernel log sent to /var/log/messages
+	systemctl mask systemd-journald
+fi

@@ -1,0 +1,8 @@
+/dts-v1/;
+/plugin/;
+&fpga {
+	firmware-name = "l20_base_pld.pdi";
+};
+
+&amba {
+};

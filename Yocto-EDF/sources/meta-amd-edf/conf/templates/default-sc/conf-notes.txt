@@ -1,0 +1,16 @@
+################################################################################
+# 
+#  AMD Embedded Development Framework configuration 
+# 
+################################################################################
+
+Note: This configuration is specific to the system-controller.  It may not be
+compatible with other AMD EDF distribution items.
+
+A boot.bin (xilinx-bootbin) and qspi image can also be generated for the
+following platforms:
+
+    - System Controller - zynqmp-k24-sc-sdt-base
+
+Example:    MACHINE=zynqmp-k24-sc-sdt-base bitbake xilinx-bootbin
+Example:    MACHINE=zynqmp-k24-sc-sdt-base bitbake edf-qspi

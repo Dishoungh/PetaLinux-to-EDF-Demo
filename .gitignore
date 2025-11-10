@@ -1,55 +1,36 @@
-# Prerequisites
-*.d
+# General
+**/.vscode
+**/*.o
+**/*.log
+**/*.jou
+**/*.str
+**/config.old
+**/rootfs_config.old
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+# Vivado
+Vivado/*
+!Vivado/*.xpr
+!Vivado/*.xsa
+!Vivado/Simple.srcs
 
-# Linker output
-*.ilk
-*.map
-*.exp
+# PetaLinux-SDK
+PetaLinux-SDK/build/
+PetaLinux-SDK/images/linux/*
+!PetaLinux-SDK/images/linux/BOOT.BIN
+!PetaLinux-SDK/images/linux/boot.scr
+!PetaLinux-SDK/images/linux/image.ub
+PetaLinux-SDK/pre-built/linux/
+PetaLinux-SDK/.petalinux/*
+!PetaLinux-SDK/.petalinux/metadata
+PetaLinux-SDK/components/plnx_workspace
+PetaLinux-SDK/components/yocto
 
-# Precompiled Headers
-*.gch
-*.pch
+# Yocto-PetaLinux
+Yocto-PetaLinux/build/*
+!Yocto-PetaLinux/build/build-script.sh
+!Yocto-PetaLinux/build/conf
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
-
-# debug information files
-*.dwo
+# Yocto-EDF
+Yocto-EDF/build/*
+!Yocto-EDF/build/build-script.sh
+!Yocto-EDF/build/conf

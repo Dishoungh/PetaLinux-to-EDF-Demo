@@ -1,0 +1,24 @@
+# Partitioned disk image for AMD Embedded Development Framekwork
+# Based on a total disk size of 32GB
+#
+# layout:
+#     /boot/efi    512MB    - a place for Arm SystemReady-compatible EFI firmware update capsules
+#     /boot        512MB    - traditional /boot (BOOT.bin, u-boot scripts, Linux kernel, device trees, etc)
+#     /           7GB       - general-purpose, yocto-built Linux user-space filesystem
+#     xen         5GB       - xen dom0
+#     ubuntu     12MB*      - 3rd party OS (ubuntu)
+#     storage     1GB       - user storage
+#
+# * NOTE: different 32GB-sized SD cards are different actual sizes
+#         for now, since this partition isn't being used, the size
+#         has been reduced to ensure the image will fit on all 
+#         32GB cards and decrease flashing time
+
+part  /boot/efi                                            --fixed-size=512M  --align 4  --fstype=vfat  --use-label  --label efi      --part-name efi
+part  /boot      --source rootfs  --change-directory=boot  --fixed-size=512M  --align 4  --fstype=ext4  --use-label  --label boot     --part-name boot     --active
+part  /          --source rootfs  --exclude-path=boot/     --fixed-size=7G    --align 4  --fstype=ext4  --use-label  --label root     --part-name root
+part xen                                                   --fixed-size=5G    --align 4  --fstype=ext4  --use-label  --label xen      --part-name xen
+part ubuntu                                                --fixed-size=12M   --align 4  --fstype=ext4  --use-label  --label ubuntu   --part-name ubuntu
+part storage                                               --fixed-size=1G    --align 4  --fstype=vfat  --use-label  --label storage  --part-name storage
+
+bootloader --ptable gpt

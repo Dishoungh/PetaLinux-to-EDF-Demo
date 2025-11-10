@@ -1,0 +1,24 @@
+
+mainmenu "PetaLinux System Configuration"
+config SUBSYSTEM_TYPE_LINUX
+        bool
+        default y
+        select SYSTEM_ZYNQ
+
+config SYSTEM_ZYNQ
+        bool "ZYNQ Configuration"
+        help
+          ZYNQ Configuration for the project.
+          All these config options will be in /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/config
+
+config SUBSYSTEM_SDT_FLOW
+        bool
+        default y
+        help
+
+config SUBSYSTEM_DISTRO_PETALINUX
+        bool
+        default y
+        help
+
+source /home/lanza/workspace/PetaLinux-to-EDF-Demo/PetaLinux-SDK/project-spec/configs/configs/Kconfig.main

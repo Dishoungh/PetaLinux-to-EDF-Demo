@@ -1,0 +1,91 @@
+/*
+ * SPDX-License-Identifier: GPL-2.0-only
+ *
+ * dtsi for Embedded Plus platform
+ *
+ * Copyright (C) 2024, Advanced Micro Devices, Inc.  All rights reserved.
+ *
+ */
+
+/ {
+	chosen {
+                bootargs = "console=ttyAMA1 earlycon=pl011,mmio32,0xFF010000,115200n8";
+                stdout-path = "serial1:115200n8";
+        };
+
+	reserved-memory {
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+		ranges;
+		rpu0_runtime_region: buffer0@0 {
+	    		no-map;
+	    		reg = <0x0 0x0 0x0 0x10000000>;
+		};
+
+		rpu0_shared_region: buffer@10000000 {
+	    		no-map;
+	    		reg = <0x0 0x10000000 0x0 0x800000>;
+		};
+		rpu1_runtime_region: buffer@10200000 {
+			no-map;
+			reg = <0x0 0x10200000 0x0 0x8000000>;
+		};
+
+	};
+};
+
+&serial0 {
+        status = "disabled";
+};
+
+&ttc0 {
+        status = "disabled";
+};
+&ttc1 {
+        status = "disabled";
+};
+
+&ospi {
+        status = "disabled";
+};
+
+&i2c2 {
+        status = "disabled";
+};
+
+&gpio1 {
+        status = "disabled";
+};
+
+&amba {
+        aie_core_ref_clk: aie_core_ref_clk {
+                #clock-cells = <0x00>;
+                clock-frequency = <1250000000>;
+                compatible = "fixed-clock";
+        };
+
+        ai_engine@20000000000 {
+                #address-cells = <0x02>;
+                #size-cells = <0x02>;
+                compatible = "xlnx,ai-engine-v2.0";
+                clock-names = "aclk0";
+                clocks = <&aie_core_ref_clk>;
+		power-domains = <&versal_firmware 0x18224072U>;
+                ranges;
+                reg = <0x200 0x00 0x01 0x00>;
+                xlnx,aie-gen = [02];
+                xlnx,core-rows = [02 02];
+                xlnx,mem-rows = [01 01];
+                xlnx,shim-rows = [00 01];
+
+                aie_aperture@20000000000 {
+                        #address-cells = <0x02>;
+                        #size-cells = <0x02>;
+                        reg = <0x200 0x00 0x01 0x00>;
+                        xlnx,columns = <0x00 0x11>;
+                        xlnx,device-name = <0x00>;
+                        xlnx,node-id = <0x18800000>;
+                };
+        };
+
+};

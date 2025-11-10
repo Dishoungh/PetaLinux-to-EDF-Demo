@@ -1,0 +1,5 @@
+system_dtb_addr=0x1F400000
+kernel_addr=0x19000000
+rootfs_addr=0x20800000
+
+booti ${kernel_addr} ${rootfs_addr} ${system_dtb_addr}

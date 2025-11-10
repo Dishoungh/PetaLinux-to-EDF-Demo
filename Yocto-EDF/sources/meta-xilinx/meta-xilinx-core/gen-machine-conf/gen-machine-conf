@@ -1,0 +1,374 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2021-2022, Xilinx, Inc.  All rights reserved.
+# Copyright (C) 2022-2025, Advanced Micro Devices, Inc.  All rights reserved.
+#
+# Author:
+#       Raju Kumar Pothuraju <rajukumar.pothuraju@amd.com>
+#
+# SPDX-License-Identifier: MIT
+
+
+import argparse
+import logging
+import os
+import pathlib
+import shutil
+import sys
+
+scripts_path = os.path.dirname(os.path.realpath(__file__))
+libs_path = scripts_path + '/lib'
+sys.path = sys.path + [libs_path]
+import logger_setup
+import common_utils
+
+logger, console_h = logger_setup.setup_logger('Gen-Machineconf')
+plugins = []
+
+global exc_backtrace
+exc_backtrace = False
+
+# Validate the hw_description given and justify xsct/sdt flow.
+def validate_hwfile(hw_description, subparser=None):
+    if not os.path.exists(hw_description):
+        raise Exception('Given path does not exists: %s' % hw_description)
+    elif os.path.isfile(hw_description):
+        hw_ext = pathlib.Path(hw_description).suffix
+        if hw_ext != '.xsa':
+            raise Exception('Only .xsa files are supported given %s' % hw_ext)
+        hw_ext = 'xsct'
+        hw_file = hw_description
+    elif os.path.isdir(hw_description):
+        XsaFiles = SDTFiles = []
+        if subparser:
+            if subparser == 'parse-xsa':
+                XsaFiles = common_utils.GetFilesFromDir(hw_description, '.xsa')
+                if not XsaFiles:
+                     raise Exception('parse-xsa: No .xsa file found in specified directory %s' % hw_description)
+            elif subparser == 'parse-sdt':
+                SDTFiles = common_utils.GetFilesFromDir(hw_description, 'system-top.dts')
+                if not SDTFiles:
+                    raise Exception('parse-sdt: No system-top.dts file found in specified directory %s' % hw_description)
+        else:
+            XsaFiles = common_utils.GetFilesFromDir(hw_description, '.xsa')
+            SDTFiles = common_utils.GetFilesFromDir(hw_description, 'system-top.dts')
+            if not XsaFiles and not SDTFiles:
+                raise Exception('No .xsa or system-top.dts file found in specified directory %s' % hw_description)
+
+        if len(XsaFiles) > 1:
+            raise Exception('More than one .xsa files found in specified directory %s' % hw_description)
+
+        if len(SDTFiles) > 1:
+            raise Exception('More than one system-top.dts files found in specified directory %s' % hw_description)
+
+        if XsaFiles and SDTFiles:
+            logger.info('Both .xsa and .dts files found in specified directory %s' % hw_description)
+            logger.info('Using system-top.dts file as default %s' % SDTFiles[0])
+            hw_ext = 'sdt'
+            hw_file = SDTFiles[0]
+        elif XsaFiles:
+            hw_ext = 'xsct'
+            hw_file = XsaFiles[0]
+        elif SDTFiles:
+            hw_ext = 'sdt'
+            hw_file = SDTFiles[0]
+    else:
+        raise Exception(
+           'Only .xsa file or System Device-tree directory supported.')
+    logger.info('Using HW file: %s' % hw_file)
+
+    hw_dir = os.path.relpath(os.path.dirname(hw_file), start=hw_description)
+
+    return hw_ext, hw_file, hw_dir
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='PetaLinux/Yocto Machine Configuration File generation tool',
+        formatter_class=argparse.RawTextHelpFormatter, add_help=False,
+        epilog='Use %(prog)s <subcommand> --help to get help on a specific command'
+    )
+    optional_args = parser._action_groups.pop()
+    required_args = parser.add_argument_group('required arguments')
+
+    required_args.add_argument('--hw-description', metavar='[<PATH_TO_XSA>/<xsa_name>.xsa] or <PATH_TO_SDTDIR>',
+                               help='Specify Hardware(xsa) file or System Device-tree Directory',
+                               )
+    optional_args.add_argument('--soc-family',
+                               choices=['microblaze', 'zynq',
+                                        'zynqmp', 'versal', 'versal-2ve-2vm'],
+                               help='SOC family type from choice list (usually auto detected).')
+    optional_args.add_argument('--soc-variant',
+                               help='SOC Variant: Ex: cg, dr, eg, ev, ai-prime, premium (usually auto detected).')
+    optional_args.add_argument('--machine-name', dest='machine', type=str,
+                               help='Provide a name to generate machine configuration')
+    optional_args.add_argument('-c', '--config-dir', metavar='<config_dir>',
+                            help='Location of the build conf directory', type=os.path.realpath,
+                            default=os.path.join(os.environ.get('BUILDDIR',''), 'conf'))
+    optional_args.add_argument('-r', '--require-machine', type=str,
+                               help='This machine will be required, instead of the '
+                                    'generic machine if defined')
+    optional_args.add_argument('-O', '--machine-overrides', type=str,
+                               help='Provide additional overrides to the generated machine')
+    optional_args.add_argument(
+        '--output', help='Output directory name', default='')
+    optional_args.add_argument('--native-sysroot',
+                               help='Native sysroot path to use the mconf/conf or lopper commands.')
+    optional_args.add_argument('--menuconfig', help='UI menuconfig option '
+                               'to update configuration(default is project).'
+                               '\nproject - To update System Level configurations '
+                               '\nrootfs  - To update Rootfs configurations',
+                               nargs='?', const='project',
+                               choices=['project', 'rootfs'])
+    optional_args.add_argument('--petalinux', help='Generate Rootfs and PetaLinux Tool conf '
+                               'files and update the build/local.conf file '
+                               'with generated .conf files.', action='store_true')
+    optional_args.add_argument('--add-config', help='Specify config macro or file containing config macros '
+                               'to be added on top of default configs', action='append',
+                               nargs='?', default=[], metavar='CONFIG_<macro>=y')
+    optional_args.add_argument('--add-rootfsconfig', help='Specify a file with list of '
+                               'package names to add into rootfs menu entry')
+    optional_args.add_argument(
+        '-D', '--debug', help='Enable debug output', action='store_true')
+
+    parser._action_groups.append(optional_args)
+    global_args, unparsed_args = parser.parse_known_args()
+
+    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
+                        help='show this help message and exit')
+
+    subparsers = parser.add_subparsers(title='subcommands', metavar='<subcommand>',
+                                       dest='subcommand')
+
+    # PetaLinux configuration tool skips bitbake usage
+    if 'PETALINUX' in os.environ.keys() or global_args.petalinux:
+        common_utils.startBitbake(disabled=True)
+    else:
+        # Try to start bitbake
+        common_utils.startBitbake()
+        if not common_utils.Bitbake.disabled:
+            try:
+                # prepare can fail if there is an invalid configuration
+                common_utils.Bitbake.prepare(True)
+            except:
+                logger.warning('Bitbake exception, bitbake is not available, some functionality may be reduced.')
+                common_utils.Bitbake.shutdown()
+                common_utils.Bitbake.disabled = True
+
+    # Try to get BBPATH to load modules
+    # We can skip this by setting SKIP_BBPATH_SEARCH variable from env
+    bbpath = ''
+    if common_utils.Bitbake.disabled:
+        logger.debug('Bitbake is disbled, skip getting BBPATH')
+    elif os.environ.get('SKIP_BBPATH_SEARCH'):
+        logger.debug('SKIP_BBPATH_SEARCH is set, Skip getting '
+                        'BBPATH to load gen-machineconf modules')
+    else:
+        bbpath = common_utils.Bitbake.getVar('BBPATH') or ''
+
+        # We can only check for duplicate machines when bbpath checking is available
+        if global_args.machine:
+            logger.debug('checking for machine %s' % global_args.machine)
+
+            for path in bbpath.split(':'):
+                check_path = os.path.join(path, 'conf/machine', global_args.machine + '.conf')
+                logger.debug('  checking %s' % check_path)
+                if os.path.exists(check_path) and check_path != os.path.join(global_args.config_dir, 'machine', global_args.machine + '.conf'):
+                    logger.warning('A machine %s was found in %s, this may conflict with the machine you specified.  It is recommended to use a different name for your machine.' % (global_args.machine, check_path))
+                    break
+
+    # Load the plugins from BBPATH and lib/gen-machineconf directory
+    for path in bbpath.split(':') + [scripts_path]:
+        pluginpath = os.path.join(path, 'lib', 'gen-machineconf')
+        common_utils.load_plugins(plugins, pluginpath)
+
+    # Register commands from plugins
+    for plugin in plugins:
+        if hasattr(plugin, 'register_commands'):
+            plugin.register_commands(subparsers)
+
+    # Check if help selected to skip hw_description check
+    parserhelp = False
+    if {'-h', '--help'} & set(unparsed_args):
+        parserhelp = True
+
+    # Check the hw_description description given or not.
+    # Adding check here as required=True with add_argument
+    # not working with subparsers parse_known_args().
+    if not global_args.hw_description and not parserhelp:
+        parser.error('The following arguments are required: %s' %
+                     '--hw-description')
+
+
+    # Default option for subparsers is not supported yet in python
+    # If user not specified any subparser use the default parser based on the hw_description provided.
+    # Get the registed parsers list from subparsers and check with the unparsed_args.
+    _hassubcommand = False
+    _subparser = None
+    for subcmd in subparsers.choices:
+        if subcmd in unparsed_args:
+            _hassubcommand = True
+            _subparser = subcmd
+            break
+
+    if not parserhelp:
+        # Make sure bitbake has started, if it's available:
+        localpath = ''
+
+        # User passed in a path, make sure it's turned into an absolute,
+        # non-relative path, and verify it's valid!
+        if '://' not in global_args.hw_description:
+            path = global_args.hw_description
+            if not path.startswith('/'):
+                path = os.path.abspath(path)
+            if not os.path.exists(path):
+                raise Exception('Unable to find hw_description %s' % path)
+            path = os.path.realpath(path)
+            global_args.hw_description = path
+
+        # Special case for passing in system-top.dts, we really need the directory we're in
+        if '://' not in global_args.hw_description and global_args.hw_description.endswith('system-top.dts'):
+            dirname = os.path.dirname(global_args.hw_description)
+            # This looks like an sdtgen output dir, pass the path to the directory instead!
+            if os.path.exists(os.path.join(dirname, 'include')):
+                global_args.hw_description = dirname
+
+        if 'PETALINUX' in os.environ.keys() or global_args.petalinux:
+            # We can only copy actual file paths, not URIs.
+            if '://' in global_args.hw_description:
+                if not global_args.hw_description.startswith('file://'):
+                    raise Exception('Unable to fetch URI, URI fetching requires bitbake.')
+
+                # Strip the file:// off
+                global_args.hw_description = global_args.hw_description[7:]
+
+            # PetaLinux workflow expects the hw_description path to be where we load and process from
+            if os.path.isfile(global_args.hw_description):
+                hw_dir = os.path.dirname(global_args.hw_description)
+            else:
+                hw_dir = global_args.hw_description
+            localpath = global_args.hw_description
+            global_args.src_uri = 'file://%s' % (global_args.hw_description)
+
+            # A file path ends up 'downloading' in a recipe with the full path,
+            # so the s_dir needs to have the dirname, but without a any leading '/'
+            global_args.s_dir = hw_dir.lstrip('/')
+        else:
+            try:
+                hw_dir, global_args.src_uri, global_args.s_dir, localpath = common_utils.Bitbake.fetchAndUnpackURI(global_args.hw_description)
+            except common_utils.FetchError as e:
+                common_utils.Bitbake.shutdown()
+                raise Exception('Unable to fetch %s: %s' % (global_args.hw_description, e))
+            except Exception as e:
+                logger.debug('Unable to fetch with bitbake, falling back to copy: %s' % e)
+
+                # We can only copy actual file paths, not URIs.
+                if '://' in global_args.hw_description:
+                    if not global_args.hw_description.startswith('file://'):
+                        raise Exception('Unable to fetch URI, URI fetching requires bitbake.')
+
+                    # Strip the file:// off
+                    global_args.hw_description = global_args.hw_description[7:]
+
+                # Based on the args.output processing below
+                if not global_args.output:
+                    global_args.output = os.path.join(os.getcwd(), 'output',
+                                   os.path.basename(global_args.hw_description).split('.')[0])
+                else:
+                    global_args.output = os.path.realpath(global_args.output)
+                common_utils.CreateDir(global_args.output)
+
+                hw_dir = global_args.output
+                target = os.path.join(hw_dir, os.path.basename(global_args.hw_description))
+
+                if os.path.isdir(global_args.hw_description):
+                    common_utils.RemoveDir(target)
+                    shutil.copytree(global_args.hw_description, target, dirs_exist_ok=True)
+                    localpath = target
+                else:
+                    shutil.copyfile(global_args.hw_description, target)
+                    localpath = target
+
+                global_args.src_uri = 'file://%s' % (global_args.hw_description)
+
+                # A file path ends up 'downloading' in a recipe with the full path,
+                # so the s_dir needs to have the dirname, but without a any leading '/'
+                global_args.s_dir = os.path.dirname(global_args.hw_description).lstrip('/')
+
+        # Validate the given hw_description and get xsct/sdt
+        global_args.hw_flow, global_args.hw_file, s_dir = validate_hwfile(hw_dir, _subparser)
+        if s_dir and s_dir != '.':
+            global_args.s_dir = os.path.join(global_args.s_dir or "", s_dir)
+            logger.debug('Update s_dir to %s' % global_args.s_dir)
+
+        if os.path.isfile(localpath):
+            global_args.sha256sum = common_utils.GetFileHashValue(localpath)
+            logger.debug('%s sha256sum is %s' % (localpath, global_args.sha256sum))
+        else:
+            logger.debug('%s is a directory, no sha256sum' % (localpath))
+
+        if not _hassubcommand:
+            if global_args.hw_flow == 'xsct':
+                unparsed_args.insert(0, 'parse-xsa')
+                _hassubcommand = True
+            elif global_args.hw_flow == 'sdt':
+                unparsed_args.insert(0, 'parse-sdt')
+                _hassubcommand = True
+            else:
+                logger.error('Unable to autodetect xsct or sdt flow, use parse-xsa or parse-sdt to define the flow')
+                return 1
+
+    args = parser.parse_args(unparsed_args, namespace=global_args)
+
+    # If user specified output directory use it if not add basename of hw_file
+    if not args.output:
+        args.output = os.path.join(os.getcwd(), 'output',
+                                   os.path.basename(args.hw_file).split('.')[0])
+    else:
+        args.output = os.path.realpath(args.output)
+    common_utils.CreateDir(args.output)
+
+    # Define log file
+    args.logfile = os.path.join(args.output, 'gen-machineconf.log')
+    common_utils.RenameFile(args.logfile,
+                            os.path.join(args.output, 'gen-machineconf.log.old'))
+
+    # Setup logger to file
+    logger_setup.setup_logger_file(args.logfile)
+    if args.debug:
+        console_h.setLevel(logging.DEBUG)
+        global exc_backtrace
+        exc_backtrace = True
+
+    # Add nativesysroot path
+    common_utils.AddNativeSysrootPath(args.native_sysroot)
+
+    # We need conf and mconf
+    common_utils.check_tool('mconf', 'kconfig-frontends-native',
+            'Tool mconf is required but not found, Check the README.md for how to use --native-sysroot')
+
+    common_utils.check_tool('conf', 'kconfig-frontends-native',
+            'Tool conf is required but not found, Check the README.md for how to use --native-sysroot')
+
+    ret = args.func(args)
+    return ret
+
+
+if __name__ == "__main__":
+    try:
+        ret = main()
+    except (AttributeError, FileNotFoundError, IndexError, KeyError, NameError, SyntaxError, TypeError, UnboundLocalError) as e:
+        ret = 1
+        import traceback
+        traceback.print_exc()
+        logger.error(e)
+    except Exception as e:
+        ret = 1
+        if exc_backtrace:
+            import traceback
+            traceback.print_exc()
+        logger.error(e)
+    finally:
+        if common_utils.Bitbake:
+            del common_utils.Bitbake
+    sys.exit(ret)
