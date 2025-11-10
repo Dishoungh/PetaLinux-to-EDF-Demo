@@ -1,0 +1,44 @@
+# POKY_BBLAYERS_CONF_VERSION is increased each time build/conf/bblayers.conf
+# changes incompatibly
+POKY_BBLAYERS_CONF_VERSION = "2"
+
+BBPATH = "${TOPDIR}"
+BBFILES ?= ""
+
+BBLAYERS ?= " \
+  ##OEROOT##/meta \
+  ##OEROOT##/meta-poky \
+  ##OEROOT##/../meta-openembedded/meta-oe \
+  ##OEROOT##/../meta-openembedded/meta-python \
+  ##OEROOT##/../meta-openembedded/meta-filesystems \
+  ##OEROOT##/../meta-openembedded/meta-networking \
+  ##OEROOT##/../meta-openembedded/meta-multimedia \
+  ##OEROOT##/../meta-openembedded/meta-webserver \
+  ##OEROOT##/../meta-virtualization \
+  ##OEROOT##/../meta-security \
+  ##OEROOT##/../meta-security/meta-tpm \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-core \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-standalone \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-standalone-sdt \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-multimedia \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-demos \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-virtualization \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-mali400 \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-gpu-malig78ae \
+  ##OEROOT##/../meta-xilinx/meta-microblaze \
+  ##OEROOT##/../meta-xilinx-tsn \
+  ##OEROOT##/../meta-openamp \
+  ##OEROOT##/../meta-amd-edf \
+  ##OEROOT##/../meta-kria \
+  ##OEROOT##/../meta-amd-adaptive-socs/meta-amd-adaptive-socs-core \
+  ##OEROOT##/../meta-amd-adaptive-socs/meta-amd-adaptive-socs-bsp \
+  ##OEROOT##/../meta-xilinx/meta-xilinx-imgrcvry \
+  ##OEROOT##/../meta-arm/meta-arm \
+  ##OEROOT##/../meta-arm/meta-arm-toolchain \
+  ##OEROOT##/../meta-jupyter \
+  ##OEROOT##/../meta-ros/meta-ros-common \
+  ##OEROOT##/../meta-ros/meta-ros2 \
+  ##OEROOT##/../meta-ros/meta-ros2-jazzy \
+  ##OEROOT##/../meta-qt5 \
+  ##OEROOT##/../meta-vitis \
+"

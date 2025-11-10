@@ -1,0 +1,15 @@
+# Partitioned disk image for AMD Embedded Development Framework
+# Based on a total disk size of 8GB
+#
+# layout:
+#     /boot/efi    512MB    - used for boot.bin and Arm SystemReady-compatible EFI firmware update capsules
+#     /boot        512MB    - traditional /boot (u-boot scripts, Linux kernel, device trees, etc)
+#     /            7GB      - general-purpose, Yocto-built Linux user-space filesystem
+#     storage      1GB      - user storage
+
+part  /boot/efi                                                                                      --fixed-size=512M  --align 16 --fstype=vfat  --use-label  --label esp
+part  /boot      --source rootfs  --change-directory=boot  --rootfs-dir=${EDF_IMAGE_ROOTFS_DIR}      --fixed-size=512M  --align 4  --fstype=ext4  --use-label  --label boot     --active
+part  /          --source rootfs  --exclude-path=boot/     --rootfs-dir=${EDF_IMAGE_ROOTFS_DIR}      --fixed-size=7G    --align 4  --fstype=ext4  --use-label  --label root
+part  storage                                                                                        --fixed-size=1G    --align 4  --fstype=vfat  --use-label  --label storage
+
+bootloader --ptable msdos

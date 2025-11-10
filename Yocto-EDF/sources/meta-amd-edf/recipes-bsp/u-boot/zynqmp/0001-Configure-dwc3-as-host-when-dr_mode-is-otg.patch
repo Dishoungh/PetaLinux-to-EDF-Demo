@@ -1,0 +1,65 @@
+From 94b5965f600de979aa340f2eef5e7a1a0d15b8ba Mon Sep 17 00:00:00 2001
+From: Jonathan Stroud <jonathan.stroud@amd.com>
+Date: Wed, 18 Jun 2025 08:39:07 -0600
+Subject: [PATCH] Configure dwc3 as host when dr_mode is otg
+
+Signed-off-by: Jonathan Stroud <jonathan.stroud@amd.com>
+---
+ drivers/usb/dwc3/core.c         | 3 +++
+ drivers/usb/dwc3/dwc3-generic.c | 9 +++++----
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/usb/dwc3/core.c b/drivers/usb/dwc3/core.c
+index a52ac74d214..cde0a635dc5 100644
+--- a/drivers/usb/dwc3/core.c
++++ b/drivers/usb/dwc3/core.c
+@@ -741,6 +741,7 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
+ 			return ret;
+ 		}
+ 		break;
++	case USB_DR_MODE_OTG:
+ 	case USB_DR_MODE_HOST:
+ 		dwc3_set_mode(dwc, DWC3_GCTL_PRTCAP_HOST);
+ 		ret = dwc3_host_init(dwc);
+@@ -749,6 +750,7 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
+ 			return ret;
+ 		}
+ 		break;
++	/*
+ 	case USB_DR_MODE_OTG:
+ 		dwc3_set_mode(dwc, DWC3_GCTL_PRTCAP_OTG);
+ 		ret = dwc3_host_init(dwc);
+@@ -763,6 +765,7 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
+ 			return ret;
+ 		}
+ 		break;
++		*/
+ 	default:
+ 		dev_err(dwc->dev,
+ 			"Unsupported mode of operation %d\n", dwc->dr_mode);
+diff --git a/drivers/usb/dwc3/dwc3-generic.c b/drivers/usb/dwc3/dwc3-generic.c
+index 36fe33351e4..c24057a8643 100644
+--- a/drivers/usb/dwc3/dwc3-generic.c
++++ b/drivers/usb/dwc3/dwc3-generic.c
+@@ -534,13 +534,14 @@ static int dwc3_glue_bind_common(struct udevice *parent, ofnode node)
+ 		dr_mode = usb_get_dr_mode(node);
+ 
+ 	if (ofnode_device_is_compatible(node, "snps,dwc3")) {
+-		if (CONFIG_IS_ENABLED(DM_USB_GADGET) &&
++		if (CONFIG_IS_ENABLED(USB_HOST) && 
++		   (dr_mode == USB_DR_MODE_HOST || dr_mode == USB_DR_MODE_OTG)) {
++			debug("%s: dr_mode: HOST\n", __func__);
++			driver = "dwc3-generic-host";
++		} else if (CONFIG_IS_ENABLED(DM_USB_GADGET) &&
+ 		   (dr_mode == USB_DR_MODE_PERIPHERAL || dr_mode == USB_DR_MODE_OTG)) {
+ 			debug("%s: dr_mode: OTG or Peripheral\n", __func__);
+ 			driver = "dwc3-generic-peripheral";
+-		} else if (CONFIG_IS_ENABLED(USB_HOST) && dr_mode == USB_DR_MODE_HOST) {
+-			debug("%s: dr_mode: HOST\n", __func__);
+-			driver = "dwc3-generic-host";
+ 		} else {
+ 			debug("%s: unsupported dr_mode %d\n", __func__, dr_mode);
+ 			return -ENODEV;
+-- 
+2.34.1
+

@@ -147,7 +147,6 @@ This step is a little unnecessary but I think it will help the transition to EDF
 To start:
 - `cd ./Yocto-PetaLinux`
 - `repo init -u https://github.com/Xilinx/yocto-manifests.git -b rel-v2025.1`
-    - Say yes
 - `repo sync`
 - `source ./setupsdk`
 
@@ -219,4 +218,18 @@ Fortunately, since we used the SDT flow, our reference device tree is already ma
 
 ## Yocto (EDF)
 
-**TBD**
+I got the Yocto flow to work with the PetaLinux layers and with SDT flow. Hooray!
+
+Now, let's do the exact same thing, but with the EDF layers instead.
+
+### Getting Started
+
+To start:
+- `cd ./Yocto-EDF`
+- `repo init -u https://github.com/Xilinx/yocto-manifests.git -b rel-v2025.1 -m default-edf.xml`
+- `repo sync`
+- `source ./edf-init-build-env`
+
+Most of the same things from the PetaLinux version still apply here.
+
+**Apparently, the 2025.1 branch for the Yocto Manifests for the EDF version is broken. I'm seeing the EDF version still reference to PetaLinux layers. Perhaps I'll wait until AMD patches this for 2025.2**
