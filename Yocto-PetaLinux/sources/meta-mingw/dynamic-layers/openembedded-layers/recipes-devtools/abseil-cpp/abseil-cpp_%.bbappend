@@ -1,1 +1,0 @@
-EXTRA_OECMAKE:remove:mingw32 = "-DBUILD_SHARED_LIBS=ON"

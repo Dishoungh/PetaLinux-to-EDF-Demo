@@ -13,24 +13,9 @@ Vivado/*
 !Vivado/*.xsa
 !Vivado/Simple.srcs
 
-# PetaLinux-SDK
-PetaLinux-SDK/build/
-PetaLinux-SDK/images/linux/*
-!PetaLinux-SDK/images/linux/BOOT.BIN
-!PetaLinux-SDK/images/linux/boot.scr
-!PetaLinux-SDK/images/linux/image.ub
-PetaLinux-SDK/pre-built/linux/
-PetaLinux-SDK/.petalinux/*
-!PetaLinux-SDK/.petalinux/metadata
-PetaLinux-SDK/components/plnx_workspace
-PetaLinux-SDK/components/yocto
 
-# Yocto-PetaLinux
-Yocto-PetaLinux/build/*
-!Yocto-PetaLinux/build/build-script.sh
-!Yocto-PetaLinux/build/conf
 
-# Yocto-EDF
-Yocto-EDF/build/*
-!Yocto-EDF/build/build-script.sh
-!Yocto-EDF/build/conf
+# Yocto
+Yocto/build/*
+!Yocto/build/build-script.sh
+!Yocto/build/conf

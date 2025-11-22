@@ -1,5 +1,0 @@
-RDEPENDS:${PN}:remove = "${LTTNGMODULES} ${LTTNGTOOLS}"
-RDEPENDS:${PN}:remove:microblaze = "systemtap icu"
-VALGRIND:microblaze = ""
-LTTNGUST:microblaze = ""
-PERF:microblaze = ""

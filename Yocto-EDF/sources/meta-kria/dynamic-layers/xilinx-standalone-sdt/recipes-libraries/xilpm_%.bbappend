@@ -1,1 +1,0 @@
-XILPM_APU_AS_OVERLAY_CONFIG_MASTER:kria = "true"

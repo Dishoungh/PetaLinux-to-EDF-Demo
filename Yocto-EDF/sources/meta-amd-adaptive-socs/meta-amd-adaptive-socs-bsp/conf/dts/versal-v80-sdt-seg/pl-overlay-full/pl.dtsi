@@ -1,8 +1,0 @@
-/dts-v1/;
-/plugin/;
-&fpga {
-	firmware-name = "v80_base_pld.pdi";
-};
-
-&amba {
-};

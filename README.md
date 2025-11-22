@@ -1,12 +1,12 @@
 # PetaLinux-to-EDF-Demo
-This project will *thoroughly* document transitioning a simple FPGA project from PetaLinux to a more native Yocto flow (**start to finish**).
+This project will *thoroughly* document transitioning a simple FPGA project from PetaLinux to the EDF (Yocto flow) **from start to finish**.
 
 ## Overview
 
-- Project Version: 2025.1
-- OS Version: Alma Linux 9.6
+- Project Version: 2025.2
+- OS Version: Alma Linux 9.7
 - Yocto Upstream Version: Scarthgap LTS (v5.0)
-- FPGA: [Digilent Arty Z7-20](https://digilent.com/shop/arty-z7-zynq-7000-soc-development-board/)
+- FPGA: [ZCU104 Dev Board](https://www.amd.com/en/products/adaptive-socs-and-fpgas/evaluation-boards/zcu104.html)
 
 ## Installation
 
@@ -25,20 +25,10 @@ This project will *thoroughly* document transitioning a simple FPGA project from
 - Vivado Install
     - Go to [Vivado Downloads](https://www.xilinx.com/support/download.html)
         - ![Vivado Installer](./Images/Vivado_Download.png)
-    - `chmod +x ~/Downloads/FPGAs_AdaptiveSoCs_Unified_SDI_2025.1_0530_0145_Lin64.bin`
+    - `chmod +x ~/Downloads/FPGAs_AdaptiveSoCs_Unified_SDI_2025.2_1114_2157_Lin64.bin`
     - Install Vivado with the Self Extracting Installer
         - **Warning: AMD Account Required!!!**
-    - Vivado is installed under: */opt/Xilinx/2025.1/Vivado*
-
-- PetaLinux Install
-    - Go to [Embedded Software](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools.html)
-        - ![PetaLinux Installer](./Images/PetaLinux-Installer.png)
-    - `chmod +x ~/Downloads/petalinux-v2025.1-05180714-installer.run`
-    - Install PetaLinux with the dedicated Installer
-        - **Warning: AMD Account Required!!!**
-    - `sudo mkdir -p /opt/Xilinx/2025.1/PetaLinux`
-    - `sudo chown -R $USER:$USER /opt/Xilinx/2025.1/PetaLinux`
-    - `~/Downloads/petalinux-v2025.1-05180714-installer.run -d /opt/Xilinx/2025.1/PetaLinux/`
+    - Vivado is installed under: */opt/Xilinx/2025.2/Vivado*
 
 - Optional: Visual Studio Code
     - `sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc`
@@ -49,31 +39,25 @@ This project will *thoroughly* document transitioning a simple FPGA project from
         - C/C++
         - Makefile Tools
         - Python
-        - Base IDE
+        - Bash IDE
         - Embedded Linux Kernel Dev
         - Yocto Project BitBake
         - Verilog-HDL
 
 ## Vivado
 
-After installing everything I need, I'm going to start with the PL design using Vivado. The PL design will be pretty simple. It will feature 3 AXI GPIO blocks: one for the 4 push buttons, one for the 2 DIP switches, and one for the 4 LEDs.
+After installing everything I need, I'm going to start with the PL design using Vivado. The PL design will be pretty simple. It will feature 3 AXI GPIO blocks: one for the 4 push buttons, one for the DIP switches, and one for the 4 LEDs.
 
 ![Block Design](./Images/Block_Design.png)
-
-For some reason, Vivado tries to request screen sharing when I compile. To stop this, I had to disable the alerts (Settings --> Tool Settings --> Window Behavior --> Alerts):
-
-![Alerts Settings](./Images/Alerts.png)
 
 After generating the bitstream, I exported the hardware platform.
 
 ![Export XSA](./Images/Export_XSA.png)
 
-![XSA File](./Images/XSA_File.png)
-
 After generating the XSA, I created the System Device Tree (SDT) using `SDTGen`.
 
 - `sdtgen`
-- `set_dt_param -dir ../SDT -xsa ./Simple.xsa`
+- `set_dt_param -dir ../SDT -xsa ../XSA/Simple.xsa`
 - `generate_sdt`
 - `exit`
 
@@ -83,72 +67,23 @@ This is what the generated SDT looks like:
 
 **TODO: I would like for there to be a script to automate the SDT generation process**
 
-## PetaLinux SDK
+## Yocto (EDF)
 
-After creating the simple Vivado design, I'm going to create an **INITRAMFS-based** image that will start a `systemd`-style initscript. This initscript will use `peekpoke`, which is an application that reads/writes to memory-mapped devices (AXI GPIO). We will use this to control the board's peripherals via GPIO.
+After creating the simple Vivado design, I'm moving onto the new EDF flow. **For this flow, I need to create an INITRAMFS image, meaning that the image will only run off of the FPGA's volatile memory.** This image, on bootup, will start a `systemd` service. This service will utilize another custom application that will read/write to the GPIO IPs via AXI. I will use the [2025.1 branch](https://github.com/Dishoungh/PetaLinux-to-EDF-Demo/tree/2025.1) for reference. 
 
-First, I create the project:
+In the 2025.1 version on PetaLinux, I configured the project to set the image type as INITRAMFS. 
 
-- `petalinux-create project --template zynq --name PetaLinux-SDK`
-- `cd ./PetaLinux-SDK`
+![INITRAMFS Settings](./Images/Image_Packaging.png)
 
-Next, I import the SDT into the PetaLinux project:
-
-- `petalinux-config --get-hw-description ../SDT/`
-    - Ethernet Settings
-        - Set it to manual since I want finer control over how the ethernet will be set up
-        - ![Manual Ethernet Settings](./Images/Ethernet_Settings.png)
-    - Image Packaging Settings
-        - This will be an INITRAMFS image
-        - ![INITRAMFS Settings](./Images/Image_Packaging.png)
-
-After setting up the PetaLinux project, I create the initscript:
-
-- `petalinux-create --type apps --name bootscript --enable`
-- `petalinux-config -c rootfs`
-    - ![Apps List](./Images/Enabled_Apps.png)
-
-I've never made a systemd script before and I want to learn to make one just for future reference. What I want to do in this script:
-
-- Initialize Ethernet
-- Mount SD Card
-- In a loop:
-    - Read Button GPIO: `peek 0x41200000`
-    - Read LEDs GPIO: `peek 0x41210000`
-    - Read RGB GPIO: `peek 0x41220000`
-    - Read Switch GPIO: `peek 0x41230000`
-    - Increment LED Value
-    - Increment RGB Value
-    - Write LED Value to LEDs GPIO: `poke 0x41210000 (VAL)`
-    - Write RGB Value to RGB GPIO: `poke 0x41220000 (VAL)`
-
-*My bootscript is located: PetaLinux-SDK/project-spec/meta-user/recipes-apps/bootscript*
-
-To build and package the project:
-- `petalinux-build`
-- `bootgen -arch zynq -image ./bootgen.bif -o ./images/linux/BOOT.BIN -w`
-
-My bootscript output looks like this:
-
-![Bootscript Output](./Images/Output_Bootscript.png)
-
-**Warning: For SDT flow, I had to explicitly specify the board I was working with in my `system-user.dtsi`**
-
-![DT for SDT](./Images/Device_Tree_Mods_SDT_Flow.png)
-
-## Yocto (PetaLinux)
-
-Now that I finally got the PetaLinux SDK to work with the new SDT flow, we got a **working reference**. The goal here is to transition from PetaLinux to the new [AMD Embedded Development Framework](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/3250585601/AMD+Embedded+Development+Framework+EDF).
-
-This step is a little unnecessary but I think it will help the transition to EDF be a bit smoother. What I want to do is do the same thing I just did with the PetaLinux SDK except use the [Yocto Manifests repo](https://github.com/Xilinx/yocto-manifests).
+This will have the build generate an `image.ub` FIT image, which is an image file that combines the rootfs as a CPIO archive, the compressed kernel image, and the device tree blob. With this, I can either boot from an SD card or from built-in NOR flash memory with BOOT.BIN, boot.scr, and image.ub files. **The goal of this project is to replicate our PetaLinux flow in the EDF flow!**
 
 ### Getting Started
 
 To start:
-- `cd ./Yocto-PetaLinux`
-- `repo init -u https://github.com/Xilinx/yocto-manifests.git -b rel-v2025.1`
+- `cd ./Yocto`
+- `repo init -u https://github.com/Xilinx/yocto-manifests.git -b rel-v2025.2 -m default-edf.xml`
 - `repo sync`
-- `source ./setupsdk`
+- `source ./edf-init-build-env`
 
 I removed the .git folders from the manifests. Yes, I know I'm not supposed to do this, but I don't care lol.
 
@@ -215,21 +150,3 @@ Fortunately, since we used the SDT flow, our reference device tree is already ma
 - Copy BOOT.BIN, boot.scr, and image.ub to SD card
 
 **Image boot is successful!!!**
-
-## Yocto (EDF)
-
-I got the Yocto flow to work with the PetaLinux layers and with SDT flow. Hooray!
-
-Now, let's do the exact same thing, but with the EDF layers instead.
-
-### Getting Started
-
-To start:
-- `cd ./Yocto-EDF`
-- `repo init -u https://github.com/Xilinx/yocto-manifests.git -b rel-v2025.1 -m default-edf.xml`
-- `repo sync`
-- `source ./edf-init-build-env`
-
-Most of the same things from the PetaLinux version still apply here.
-
-**Apparently, the 2025.1 branch for the Yocto Manifests for the EDF version is broken. I'm seeing the EDF version still reference to PetaLinux layers. Perhaps I'll wait until AMD patches this for 2025.2**

@@ -1,7 +1,0 @@
-the_ROM_image:
-{
-	[bootloader] ./images/linux/zynq_fsbl.elf
-	./images/linux/system.bit
-	./images/linux/u-boot.elf
-	[load=0x200000] ./images/linux/system.dtb
-}

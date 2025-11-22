@@ -1,1 +1,0 @@
-ALSA_PACKAGES += "sox"

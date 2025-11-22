@@ -1,4 +1,0 @@
-# Allegro VDU Encode, Decoder module drivers
-SUBSYSTEM=="allegro_decode_class", KERNEL=="allegroDecodeIP[0-4]*", MODE="0660", GROUP="video", TAG+="uaccess"
-
-
