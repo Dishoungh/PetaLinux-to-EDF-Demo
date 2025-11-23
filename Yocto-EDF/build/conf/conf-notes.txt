@@ -1,18 +1,28 @@
-### Shell environment set up for builds. ###
+################################################################################
+# 
+#  AMD Embedded Development Framework configuration 
+# 
+################################################################################
 
-You can now run 'bitbake <target>'
+The following common machines:
+    - amd-cortexa53-common
+    - amd-cortexa53-mali-common
+    - amd-cortexa72-common
+    - amd-cortexa78-common
+    - amd-cortexa78-mali-common
 
-Common targets are:
-    petalinux-image-minimal
-    petalinux-image-full
-    petalinux-image-everything
-    meta-qemu-xilinx
-    meta-xilinx-toolchain
+Can build the following images:
+    - edf-linux-disk-image
+    - meta-edf-app-sdk
+    - container-app-hello-world
+    - container-devtools-edf
 
-You can also run generated qemu images with a command like 'runqemu qemux86-64'.
+Example:    MACHINE=amd-cortexa72-common bitbake edf-linux-disk-image
 
-Other commonly useful commands are:
- - 'devtool' and 'recipetool' handle common recipe tasks
- - 'bitbake-layers' handles common layer tasks
- - 'oe-pkgdata-util' handles common target package tasks
+A boot.bin (xilinx-bootbin) can also be generated for the following platforms:
 
+    - zcu104 - zynqmp-zcu104-sdt-full
+    - zcu111 - zynqmp-zcu111-sdt-full
+    - vek280 - versal-vek280-sdt-seg
+
+Example:    MACHINE=zynqmp-zcu104-sdt-full bitbake xilinx-bootbin

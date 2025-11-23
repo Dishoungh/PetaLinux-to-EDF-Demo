@@ -230,6 +230,9 @@ To start:
 - `repo sync`
 - `source ./edf-init-build-env`
 
-Most of the same things from the PetaLinux version still apply here.
-
-**Apparently, the 2025.1 branch for the Yocto Manifests for the EDF version is broken. I'm seeing the EDF version still reference to PetaLinux layers. Perhaps I'll wait until AMD patches this for 2025.2**
+To build:
+- `bitbake core-image-minimal`
+- `cp -L ./tmp/deploy/images/arty-z7/BOOT-arty-z7.bin ./images/BOOT.BIN`
+- `cp ./tmp/deploy/images/arty-z7/boot.scr ./images/boot.scr`
+- `cp -L ./tmp/deploy/images/arty-z7/fitImage ./images/image.ub`
+- `cp ./tmp/deploy/images/arty-z7/fsbl-arty-z7.elf ./images/zynq_fsbl.elf`

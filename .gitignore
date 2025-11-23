@@ -32,5 +32,5 @@ Yocto-PetaLinux/build/*
 
 # Yocto-EDF
 Yocto-EDF/build/*
-!Yocto-EDF/build/build-script.sh
 !Yocto-EDF/build/conf
+!Yocto-EDF/build/images

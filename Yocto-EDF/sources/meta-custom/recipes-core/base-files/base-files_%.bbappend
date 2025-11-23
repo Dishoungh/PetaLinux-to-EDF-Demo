@@ -1,8 +1,7 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI += "file://issue"
-SRC_URI += "file://issue.net"
+SRC_URI += "file://custom-motd"
 
-do_install_basefilesissue:append() {
-    install -m 0644 ${WORKDIR}/issue* ${D}${sysconfdir}
+do_install:append() {
+    install ${WORKDIR}/custom-motd ${D}${sysconfdir}/motd
 }
