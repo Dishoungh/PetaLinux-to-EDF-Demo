@@ -1,0 +1,11 @@
+APP = "hello-world"
+FHW_DEPENDS = ""
+FHW_MCDEPENDS = "mc::${MACHINE}-cortexr5-1-baremetal:${APP}:do_deploy"
+# For multiconfig apps depends does not work and default for xilinx-bootbin depends got added
+DEPENDS:remove = "${APP}"
+do_compile[mcdepends] += "${FHW_MCDEPENDS}"
+FHW_DEPLOY_DIR = "${TMPDIR}-${MACHINE}-cortexr5-1-baremetal/deploy/images/${MACHINE}"
+BIF_PARTITION_ATTR:append = " ${APP}"
+BIF_PARTITION_ATTR[hello-world] = "destination_cpu=r5-1"
+BIF_PARTITION_IMAGE[hello-world] = "${FHW_DEPLOY_DIR}/${APP}-${MACHINE}-${MACHINE}-cortexr5-1-baremetal.elf"
+BIF_PARTITION_ID[hello-world] = "0x1c000000"

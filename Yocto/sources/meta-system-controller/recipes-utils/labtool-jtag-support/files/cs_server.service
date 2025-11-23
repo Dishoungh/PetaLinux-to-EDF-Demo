@@ -1,0 +1,14 @@
+[Unit]
+Description=Enable Chip Scopy server
+After=hw_server.service
+PartOf=hw_server.service
+
+[Service]
+Type=exec
+Restart=always
+NotifyAccess=all
+ExecStart=/opt/labtools/bin/cs_server
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target

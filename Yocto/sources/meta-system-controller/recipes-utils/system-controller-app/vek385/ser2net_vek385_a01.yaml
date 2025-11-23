@@ -1,0 +1,48 @@
+%YAML 1.1
+---
+led: &muxsel0
+  driver: sysfs
+  options:
+    type: "static"
+    device: "uartmuxsel0"
+
+led: &muxsel1
+  driver: sysfs
+  options:
+    type: "static"
+    device: "uartmuxsel1"
+
+connection: &con0100
+    accepter: telnet,tcp,4000
+    enable: on
+    options:
+      banner: "\r\nVersal PS UART1\r\n\r\n"
+      kickolduser: true
+      telnet-brk-on-sync: true
+      led-conn: *muxsel0
+    connector: serialdev,
+              /dev/ttyPS1,
+              115200n81,local
+
+connection: &con0101
+    accepter: telnet,tcp,4001
+    enable: on
+    options:
+      banner: "\r\nVersal PS UART0\r\n\r\n"
+      kickolduser: true
+      telnet-brk-on-sync: true
+    connector: serialdev,
+              /dev/ttyUL1,
+              115200n81,local
+
+connection: &con0102
+    accepter: telnet,tcp,4002
+    enable: on
+    options:
+      banner: "\r\nVersal PL UART0\r\n\r\n"
+      kickolduser: true
+      telnet-brk-on-sync: true
+      led-conn: *muxsel1
+    connector: serialdev,
+              /dev/ttyUL2,
+              115200n81,local

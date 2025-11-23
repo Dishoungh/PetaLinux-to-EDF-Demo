@@ -1,0 +1,16 @@
+[Match]
+Name=usb0
+
+[Link]
+RequiredForOnline=no
+
+[Network]
+Address=172.31.254.1/30
+DHCPServer=yes
+
+[DHCPServerStaticLease]
+MACAddress=02:0a:35:00:00:02
+Address=172.31.254.2
+
+[Install]
+WantedBy=sys-subsystem-net-devices-usb0.device

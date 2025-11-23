@@ -1,0 +1,25 @@
+args:
+    - --hw-description https://edf.amd.com/sswreleases/rel-v2025.2/sdt/2025.2/2025.2_1115_1_11150857/external/zynqmp-zcu102-sdt-full/zynqmp-zcu102-sdt-full_2025.2_1115_1_11150857.tar.gz
+    - --machine-name zynqmp-zcu102-sdt-full
+    - -g full
+kconfig:
+
+machine:
+    pre:
+    post:
+        QB_MEM:
+            op: '='
+            val: "-m 4G"
+        QEMU_HW_DTB_PS:
+            op: '='
+            val: "${QEMU_HW_DTB_PATH}/board-zynqmp-zcu102.dtb"
+        QEMU_HW_DTB_PMU:
+            op: '='
+            val: "${QEMU_HW_DTB_PATH}/zynqmp-pmu.dtb"
+        ENABLE_XEN_DTSI:
+            comment: "Temporarily enable XEN and XEN QEMU DTSI to system.dtb"
+            op: '='
+            val: "1"
+        ENABLE_XEN_QEMU_DTSI:
+            op: '='
+            val: "1"

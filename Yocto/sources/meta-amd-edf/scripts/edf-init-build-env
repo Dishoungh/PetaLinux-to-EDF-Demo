@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# EDF Build Environment Setup Script
+#
+# Copyright (C) 2025, Advanced Micro Devices, Inc.  All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+#
+
+#
+# Normally this is called as '. ./edf-init-build-env <builddir>'
+#
+
+# This works in most shells (not dash), but not all of them pass the arguments
+# when being sourced.  To workaround the shell limitation use "set <builddir>"
+# prior to sourcing this script.
+#
+FAIL=
+if [ -n "$BASH_SOURCE" ]; then
+    THIS_SCRIPT=$BASH_SOURCE
+elif [ -n "$ZSH_NAME" ]; then
+    THIS_SCRIPT=$0
+else
+    THIS_SCRIPT="$(pwd)/edf-init-build-env"
+    if [ ! -e "$THIS_SCRIPT" ]; then
+        echo "Error: $THIS_SCRIPT doesn't exist!" >&2
+        echo "Please source this script in $(basename $THIS_SCRIPT)'s directory." >&2
+        FAIL=true
+    fi
+fi
+
+#
+# This works in most shells (not dash)
+#
+if [ -z "$ZSH_NAME" ] && [ "$0" = "$THIS_SCRIPT" ]; then
+    echo "Error: This script needs to be sourced. Please run as '. $THIS_SCRIPT'" >&2
+    exit 1
+fi
+
+if [ -z "$FAIL" ]; then
+    export ROOT=$(readlink -f $(dirname "$THIS_SCRIPT"))
+
+    # Set default template if one is not already in the env or passed
+    if [ -z ${TEMPLATECONF} ]; then
+        TEMPLATECONF=$ROOT/sources/meta-amd-edf/conf/templates/default
+    fi
+
+    # Public release gen-machine-conf path
+    if [ -d $ROOT/sources/meta-xilinx/meta-xilinx-core/gen-machine-conf ]; then
+        PATH=$ROOT/sources/meta-xilinx/meta-xilinx-core/gen-machine-conf:$PATH
+    fi
+
+    # '.' is POSIX, 'source' is not, use 'source' for dash
+    # Fake it so we oe-init-build-env works in dash
+    BASH_SOURCE=$ROOT/sources/poky/oe-init-build-env
+    . $ROOT/sources/poky/oe-init-build-env "$@"
+fi

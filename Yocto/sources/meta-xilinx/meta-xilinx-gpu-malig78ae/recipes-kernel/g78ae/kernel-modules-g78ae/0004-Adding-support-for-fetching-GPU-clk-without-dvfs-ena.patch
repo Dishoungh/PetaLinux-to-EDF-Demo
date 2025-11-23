@@ -1,0 +1,58 @@
+From 888572235806ec850a7ac0f2c33c38323b409d3f Mon Sep 17 00:00:00 2001
+From: Parth Gajjar <parth.gajjar@amd.com>
+Date: Thu, 4 Sep 2025 07:34:15 -0700
+Subject: [PATCH] Adding support for fetching GPU clk without dvfs enabled
+
+Added support for fetching GPU clock for case where
+dvfs is not enabled
+
+Upstream-Status: Pending
+Signed-off-by: Parth Gajjar <parth.gajjar@amd.com>
+---
+ drivers/gpu/arm/midgard/mali_kbase_core_linux.c | 7 +++++++
+ drivers/gpu/arm/midgard/mali_kbase_gpuprops.c   | 5 ++++-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/arm/midgard/mali_kbase_core_linux.c b/drivers/gpu/arm/midgard/mali_kbase_core_linux.c
+index 830351a..c28a2fc 100644
+--- a/drivers/gpu/arm/midgard/mali_kbase_core_linux.c
++++ b/drivers/gpu/arm/midgard/mali_kbase_core_linux.c
+@@ -4484,6 +4484,7 @@ int power_control_init(struct kbase_device *kbdev)
+ 	struct platform_device *pdev;
+ 	int err = 0;
+ 	unsigned int i;
++	unsigned long rate = 0;
+ #if defined(CONFIG_REGULATOR)
+ 	static const char *const regulator_names[] = { "mali", "shadercores" };
+ 	BUILD_BUG_ON(ARRAY_SIZE(regulator_names) < BASE_MAX_NR_CLOCKS_REGULATORS);
+@@ -4544,6 +4545,12 @@ int power_control_init(struct kbase_device *kbdev)
+ 			clk_put(kbdev->clocks[i]);
+ 			break;
+ 		}
++
++		/* saving mali clock in max frequency */
++		if (i == 0) {
++			rate = clk_get_rate(kbdev->clocks[i]);
++			kbdev->gpu_props.gpu_freq_khz_max = rate / 1000;
++		}
+ 	}
+ 	if (err == -EPROBE_DEFER) {
+ 		while (i > 0) {
+diff --git a/drivers/gpu/arm/midgard/mali_kbase_gpuprops.c b/drivers/gpu/arm/midgard/mali_kbase_gpuprops.c
+index 503fd83..321a394 100644
+--- a/drivers/gpu/arm/midgard/mali_kbase_gpuprops.c
++++ b/drivers/gpu/arm/midgard/mali_kbase_gpuprops.c
+@@ -841,6 +841,9 @@ int kbase_device_populate_max_freq(struct kbase_device *kbdev)
+ 	/* obtain max configured gpu frequency, if devfreq is enabled then
+ 	 * this will be overridden by the highest operating point found
+ 	 */
+-	kbdev->gpu_props.gpu_freq_khz_max = DEFAULT_GPU_FREQ_KHZ_MAX;
++	if (!kbdev->gpu_props.gpu_freq_khz_max) {
++		kbdev->gpu_props.gpu_freq_khz_max = DEFAULT_GPU_FREQ_KHZ_MAX;
++	}
++
+ 	return 0;
+ }
+-- 
+2.43.0
+

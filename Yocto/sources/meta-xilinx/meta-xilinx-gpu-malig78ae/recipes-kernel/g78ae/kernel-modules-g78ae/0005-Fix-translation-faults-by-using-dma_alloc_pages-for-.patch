@@ -1,0 +1,246 @@
+From c0179778ac923b46414400ec726fa653e551d56d Mon Sep 17 00:00:00 2001
+From: Parth Gajjar <parth.gajjar@amd.com>
+Date: Tue, 23 Sep 2025 04:52:47 -0700
+Subject: [PATCH] Fix translation faults by using dma_alloc_pages for 40-bit
+ GPU addressing
+
+The GPU supports 40-bit physical addressing but used alloc_pages for memory
+allocation. When allocations exceed the 40-bit range, translation faults occur.
+Replacing alloc_pages with dma_alloc_pages restricts allocations to the
+40-bit range by honoring the DMA mask set to 40 bits.
+
+Upstream-Status: Invalid [AMD Specific]
+Signed-off-by: Parth Gajjar <parth.gajjar@amd.com>
+---
+ .../memory_group_manager.c                    | 155 +++++++++++++++++-
+ 1 file changed, 151 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/base/arm/memory_group_manager/memory_group_manager.c b/drivers/base/arm/memory_group_manager/memory_group_manager.c
+index 3976e8b..f031220 100644
+--- a/drivers/base/arm/memory_group_manager/memory_group_manager.c
++++ b/drivers/base/arm/memory_group_manager/memory_group_manager.c
+@@ -25,6 +25,9 @@
+ #include <linux/platform_device.h>
+ #include <linux/version.h>
+ #include <linux/module.h>
++#include <linux/spinlock.h>
++#include <linux/dma-mapping.h>
++
+ #if IS_ENABLED(CONFIG_DEBUG_FS)
+ #include <linux/debugfs.h>
+ #include <linux/version_compat_defs.h>
+@@ -90,6 +93,21 @@ struct mgm_groups {
+ #endif
+ };
+ 
++/**
++ * struct page_dma_node - Structure for storing mapping of page and dma handle
++ *  @page: page
++ *  @dma_handle: dma handle for the page created
++ *  @next: pointer to next node in linkedlist.
++ */
++struct page_dma_node {
++	struct page *page;
++	dma_addr_t dma_handle;
++	struct page_dma_node *next;
++};
++
++static struct page_dma_node *page_dma_head = NULL;
++static DEFINE_SPINLOCK(page_dma_lock);
++
+ #if IS_ENABLED(CONFIG_DEBUG_FS)
+ 
+ static int mgm_size_get(void *data, u64 *val)
+@@ -239,12 +257,123 @@ static void update_size(struct memory_group_manager_device *mgm_dev, unsigned in
+ 	}
+ }
+ 
++static void init_page_dma_mapping(void)
++{
++	page_dma_head = NULL;
++	pr_info("Page-DMA mapping initialized.\n");
++}
++
++static int add_page_dma_mapping(struct page *page, dma_addr_t dma_handle)
++{
++	struct page_dma_node *new_node = NULL;
++	unsigned long flags;
++
++	if (!page) {
++		pr_err("add_page_dma_mapping: NULL page.\n");
++		return -EINVAL;
++	}
++
++	new_node = kmalloc(sizeof(*new_node), GFP_KERNEL);
++	if (!new_node) {
++		pr_err("add_page_dma_mapping: Memory allocation failed.\n");
++		return -ENOMEM;
++	}
++
++	new_node->page = page;
++	new_node->dma_handle = dma_handle;
++
++	spin_lock_irqsave(&page_dma_lock, flags);
++	new_node->next = page_dma_head;
++	page_dma_head = new_node;
++	spin_unlock_irqrestore(&page_dma_lock, flags);
++
++	pr_debug("Mapping added: page=%p, dma_handle=%pad\n", page, &dma_handle);
++	return 0;
++}
++
++
++static int lookup_page_dma_handle(struct page *page, dma_addr_t *out_dma_handle)
++{
++	struct page_dma_node *curr = NULL;
++	unsigned long flags;
++
++	if (!page || !out_dma_handle) {
++		pr_err("lookup_page_dma_handle: Invalid arguments.\n");
++		return -EINVAL;
++	}
++
++	spin_lock_irqsave(&page_dma_lock, flags);
++	curr = page_dma_head;
++	while (curr) {
++		if (curr->page == page) {
++			*out_dma_handle = curr->dma_handle;
++			spin_unlock_irqrestore(&page_dma_lock, flags);
++			pr_debug("Mapping found: page=%p, dma_handle=%pad\n", page, out_dma_handle);
++			return 0;
++		}
++		curr = curr->next;
++	}
++	spin_unlock_irqrestore(&page_dma_lock, flags);
++
++	pr_warn("Mapping not found for page=%p\n", page);
++	return -ENOENT;
++}
++
++
++static int remove_page_dma_mapping(struct page *page)
++{
++	struct page_dma_node *curr, *prev = NULL;
++	unsigned long flags;
++
++	if (!page) {
++		pr_err("remove_page_dma_mapping: NULL page pointer.\n");
++		return -EINVAL;
++	}
++
++	spin_lock_irqsave(&page_dma_lock, flags);
++	curr = page_dma_head;
++	while (curr) {
++		if (curr->page == page) {
++			if (prev)
++				prev->next = curr->next;
++			else
++				page_dma_head = curr->next;
++
++			spin_unlock_irqrestore(&page_dma_lock, flags);
++			pr_debug("Mapping removed: page=%p, dma_handle=%pad\n", page, &curr->dma_handle);
++			kfree(curr);
++			return 0;
++		}
++		prev = curr;
++		curr = curr->next;
++	}
++	spin_unlock_irqrestore(&page_dma_lock, flags);
++
++	pr_warn("Mapping to remove not found for page=%p\n", page);
++	return -ENOENT;
++}
++
++static void cleanup_page_dma_mapping(void)
++{
++	struct page_dma_node *curr = page_dma_head;
++	while (curr) {
++		struct page_dma_node *next = curr->next;
++		pr_debug("Cleaning up mapping: page=%p, dma_handle=%pad\n", curr->page, &curr->dma_handle);
++		kfree(curr);
++		curr = next;
++	}
++	page_dma_head = NULL;
++}
++
+ static struct page *example_mgm_alloc_page(struct memory_group_manager_device *mgm_dev,
+ 					   unsigned int group_id, gfp_t gfp_mask,
+ 					   unsigned int order)
+ {
+ 	struct mgm_groups *const data = mgm_dev->data;
+ 	struct page *p;
++	dma_addr_t dma_handle;
++	size_t size = PAGE_SIZE << order;
++	int ret = 0;
+ 
+ 	dev_dbg(data->dev, "%s(mgm_dev=%pK, group_id=%u gfp_mask=0x%x order=%u\n", __func__,
+ 		(void *)mgm_dev, group_id, gfp_mask, order);
+@@ -252,14 +381,20 @@ static struct page *example_mgm_alloc_page(struct memory_group_manager_device *m
+ 	if (WARN_ON(group_id >= MEMORY_GROUP_MANAGER_NR_GROUPS))
+ 		return NULL;
+ 
+-	p = alloc_pages(gfp_mask, order);
++	gfp_mask &= ~(GFP_HIGHUSER_MOVABLE | GFP_HIGHUSER);
++	p = dma_alloc_pages(data->dev, size, &dma_handle, DMA_BIDIRECTIONAL, gfp_mask);
+ 
+ 	if (p) {
++		ret = add_page_dma_mapping(p, dma_handle);
++		if (ret) {
++			dev_err(data->dev,"Fail to store dma_handle for page %p \n",p);
++			dma_free_coherent(data->dev, size, page_address(p), dma_handle);
++			return NULL;
++		}
+ 		update_size(mgm_dev, group_id, order, true);
+ 	} else {
+ 		struct mgm_groups *data = mgm_dev->data;
+-
+-		dev_dbg(data->dev, "alloc_pages failed\n");
++		dev_dbg(data->dev, "dma_alloc_pages failed\n");
+ 	}
+ 
+ 	return p;
+@@ -269,6 +404,9 @@ static void example_mgm_free_page(struct memory_group_manager_device *mgm_dev,
+ 				  unsigned int group_id, struct page *page, unsigned int order)
+ {
+ 	struct mgm_groups *const data = mgm_dev->data;
++	size_t size = PAGE_SIZE << order;
++	dma_addr_t dma_handle = 0;
++	int ret = 0;
+ 
+ 	dev_dbg(data->dev, "%s(mgm_dev=%pK, group_id=%u page=%pK order=%u\n", __func__,
+ 		(void *)mgm_dev, group_id, (void *)page, order);
+@@ -276,7 +414,14 @@ static void example_mgm_free_page(struct memory_group_manager_device *mgm_dev,
+ 	if (WARN_ON(group_id >= MEMORY_GROUP_MANAGER_NR_GROUPS))
+ 		return;
+ 
+-	__free_pages(page, order);
++	ret = lookup_page_dma_handle(page, &dma_handle);
++	if (ret) {
++		dev_err(data->dev, "No dma_handle found for page %p\n", page);
++		return;
++	}
++
++	dma_free_coherent(data->dev, size, page_address(page), dma_handle);
++	remove_page_dma_mapping(page);
+ 
+ 	update_size(mgm_dev, group_id, order, false);
+ }
+@@ -387,6 +532,7 @@ static int mgm_initialize_data(struct mgm_groups *mgm_data)
+ 		atomic_set(&mgm_data->groups[i].update_gpu_pte, 0);
+ 	}
+ 
++	init_page_dma_mapping();
+ 	return mgm_initialize_debugfs(mgm_data);
+ }
+ 
+@@ -404,6 +550,7 @@ static void mgm_term_data(struct mgm_groups *data)
+ 	}
+ 
+ 	mgm_term_debugfs(data);
++	cleanup_page_dma_mapping();
+ }
+ 
+ static int memory_group_manager_probe(struct platform_device *pdev)
+-- 
+2.43.0
+

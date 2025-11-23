@@ -13,9 +13,7 @@ Vivado/*
 !Vivado/*.xsa
 !Vivado/Simple.srcs
 
-
-
 # Yocto
 Yocto/build/*
-!Yocto/build/build-script.sh
 !Yocto/build/conf
+!Yocto/build/images

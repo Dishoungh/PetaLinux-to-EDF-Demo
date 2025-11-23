@@ -1,0 +1,61 @@
+From 47271155e11ba0966919ab7e96f66f3af6602214 Mon Sep 17 00:00:00 2001
+From: Swagath Gadde <swagath.gadde@amd.com>
+Date: Fri, 9 Feb 2024 12:02:05 +0530
+Subject: [DEVICE-TREE-XLNX PATCH] DTG:sync: u-boot dtg sync wrt 2023.2
+
+Sync the following commit to 2023.2 DTG to resolve SC panic issue.
+
+1.arm64: zynqmp: Add 'silabs, skip-recall' to all si570 clk nodes.
+
+Signed-off-by: Swagath Gadde <swagath.gadde@amd.com>
+---
+ .../kernel_dtsi/2023.2/BOARD/zynqmp-e-a2197-00-reva.dtsi     | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/device_tree/data/kernel_dtsi/2023.2/BOARD/zynqmp-e-a2197-00-reva.dtsi b/device_tree/data/kernel_dtsi/2023.2/BOARD/zynqmp-e-a2197-00-reva.dtsi
+index 5a2b3ba1..107fb6a0 100644
+--- a/device_tree/data/kernel_dtsi/2023.2/BOARD/zynqmp-e-a2197-00-reva.dtsi
++++ b/device_tree/data/kernel_dtsi/2023.2/BOARD/zynqmp-e-a2197-00-reva.dtsi
+@@ -476,6 +476,7 @@
+ 				factory-fout = <156250000>;
+ 				clock-frequency = <156250000>;
+ 				clock-output-names = "si570_zsfp_clk";
++				silabs,skip-recall;
+ 			};
+ 		};
+ 		i2c@6 { /* USER_SI570_1 */
+@@ -490,6 +491,7 @@
+ 				factory-fout = <100000000>;
+ 				clock-frequency = <100000000>;
+ 				clock-output-names = "si570_user1";
++				silabs,skip-recall;
+ 			};
+ 
+ 		};
+@@ -586,6 +588,7 @@
+ 				factory-fout = <200000000>;
+ 				clock-frequency = <200000000>;
+ 				clock-output-names = "si570_lpddr4_clk2";
++				silabs,skip-recall;
+ 			};
+ 		};
+ 		i2c@5 { /* LPDDR4_SI570_CLK1 */
+@@ -600,6 +603,7 @@
+ 				factory-fout = <200000000>;
+ 				clock-frequency = <200000000>;
+ 				clock-output-names = "si570_lpddr4_clk1";
++				silabs,skip-recall;
+ 			};
+ 		};
+ 		i2c@6 { /* HSDP_SI570 */
+@@ -614,6 +618,7 @@
+ 				factory-fout = <156250000>;
+ 				clock-frequency = <156250000>;
+ 				clock-output-names = "si570_hsdp_clk";
++				silabs,skip-recall;
+ 			};
+ 		};
+ 		i2c@7 { /* 8A34001 - U219B and J310 connector */
+-- 
+2.25.1
+

@@ -1,0 +1,6 @@
+[global]
+default=xen
+
+[xen]
+options=console=dtuart dom0_mem=1500M dom0_max_vcpus=1 bootscrub=0 vwfi=native sched=null
+kernel=Image console=hvc0 earlycon=xen earlyprintk=xen clk_ignore_unused root=PARTUUID=@@ROOTFS_UUID@@ ro rootwait

@@ -1,0 +1,15 @@
+args:
+    - --hw-description https://edf.amd.com/sswreleases/rel-v2025.2/sdt/2025.2/2025.2_1115_1_11150857/external/zynq-zc702-sdt-full/zynq-zc702-sdt-full_2025.2_1115_1_11150857.tar.gz
+    - --machine-name zynq-zc702-sdt-full
+    - -g full
+kconfig:
+
+machine:
+    pre:
+    post:
+        QB_MEM:
+            op: '='
+            val: "-m 1024"
+        QEMU_HW_SERIAL:
+            op: '='
+            val: "-serial null -serial mon:stdio"

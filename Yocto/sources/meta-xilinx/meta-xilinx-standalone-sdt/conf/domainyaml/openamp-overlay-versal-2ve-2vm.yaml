@@ -1,0 +1,176 @@
+definitions:
+  ddrboot: &ddrboot
+    - start: 0x9800100
+      size: 0x5FF00
+      no-map: 1
+  rpu0vdev0vring0: &rpu0vdev0vring0
+    - start: 0x9860000
+      size: 0x4000
+      no-map: 1
+  rpu0vdev0vring1: &rpu0vdev0vring1
+    - start: 0x9864000
+      size: 0x4000
+      no-map: 1
+  rpu0vdev0buffer: &rpu0vdev0buffer
+    - start: 0x9868000
+      size: 0x40000
+      no-map: 1
+  rsctbl: &rsctbl
+    - start: 0x9800000
+      size: 0x100
+      no-map: 1
+
+domains:
+  APU_Linux:
+    compatible: openamp,domain-v1
+    cpus:
+      - cluster: cpus_a78
+        cpumask: 0xf
+        mode:
+          secure: false
+          el: 0x3
+    os,type: linux
+    domain-to-domain:
+        compatible: openamp,domain-to-domain-v1
+        remoteproc-relation:
+            compatible: openamp,remoteproc-v2
+            remote:
+                - RPU_Zephyr
+            elfload:
+                - [ r52_0a_atcm_global, r52_0a_btcm_global, r52_0a_ctcm_global, ddrboot, rsctbl ]
+
+        rpmsg-relation:
+            compatible: openamp,rpmsg-v1
+            remote:
+                - RPU_Zephyr
+            carveouts:
+                 - rpu0vdev0vring0
+                 - rpu0vdev0vring1
+                 - rpu0vdev0buffer
+            mbox:
+                - mailbox@eb3b0000
+    reserved-memory:
+        <<+: [ *rpu0vdev0vring1,
+               *rpu0vdev0vring0,
+               *rpu0vdev0buffer,
+               *ddrboot,
+               *rsctbl ]
+  RPU_Zephyr:
+    compatible: openamp,domain-v1
+    cpus:
+      - cluster: cpus_r52_0
+        cluster_cpu: cortexr52_0
+        cpumask: 0x1
+        mode:
+          secure: true
+          el: 0x3
+    os,type: zephyr
+    xlnx,ddr-boot: true
+    domain-to-domain:
+         compatible: openamp,domain-to-domain-v1
+         rpmsg-relation:
+             compatible: openamp,rpmsg-v1
+             host:
+                 - APU_Linux
+             mbox:
+                 - mailbox@eb3b1000
+             carveouts:
+                 - rpu0vdev0vring0
+                 - rpu0vdev0vring1
+                 - rpu0vdev0buffer
+    reserved-memory:
+        ranges: true
+        <<+: [ *rpu0vdev0vring1, *rpu0vdev0vring0, *rpu0vdev0buffer, *rsctbl, *ddrboot ]
+    sram:
+      - dev: r52_0a_atcm_global@eba00000
+        label: r52_0a_atcm_global
+        size: 64K
+        spec_name: R52_0A_ATCM_GLOBAL
+        start: '0xeba00000'
+      - dev: r52_0a_btcm_global@eba10000
+        label: r52_0a_btcm_global
+        size: 32K
+        spec_name: R52_0A_BTCM_GLOBAL
+        start: '0xeba10000'
+      - dev: r52_0a_ctcm_global@eba20000
+        label: r52_0a_ctcm_global
+        size: 32K
+        spec_name: R52_0A_CTCM_GLOBAL
+        start: '0xeba20000'
+
+    access:
+      - dev: r52_0a_atcm_global@eba00000
+        label: r52_0a_atcm_global
+        flags: {}
+      - dev: r52_0a_btcm_global@eba10000
+        label: r52_0a_btcm_global
+        flags: {}
+      - dev: r52_0a_ctcm_global@eba20000
+        label: r52_0a_ctcm_global
+        flags: {}
+      - dev: timer@f1e80000
+        flags: {}
+        label: ttc2
+        spec_name: TTC2
+      - dev: mailbox@eb340000
+        flags: {}
+        label: ipi1
+        spec_name: IPI1
+      - dev: mailbox@eb3b1000
+        flags: {}
+        label: ipi_nobuf2
+        spec_name: IPI_NO_BUF2
+      - dev: mailbox@eb3b0000
+        flags: {}
+        label: ipi_nobuf1
+        spec_name: IPI_NO_BUF1
+      - dev: serial@f1920000
+        flags: {}
+        label: serial0
+        spec_name: UART0
+      - dev: serial@f1930000
+        flags: {}
+        label: serial1
+        spec_name: UART1
+      - dev: mmc@f1040000
+        flags: {}
+      - dev: mmc@f1050000
+        flags: {}
+      - dev: serial@f1930000
+        flags: {}
+      - dev: serial@f1930000
+        flags: {}
+      - dev: serial@f1930000
+        flags: {}
+      - dev: serial@b2090000
+        flags: {}
+      - dev: coresight@f0800000
+        flags: {}
+      - dev: spi@f1010000
+        flags: {}
+      - dev: spi@f1030000
+        flags: {}
+      - dev: spi@f19c0000
+        flags: {}
+      - dev: spi@f19d0000
+        flags: {}
+      - dev: i2c@f1940000
+        flags: {}
+      - dev: i2c@f1950000
+        flags: {}
+      - dev: i2c@f1960000
+        flags: {}
+      - dev: i2c@f1970000
+        flags: {}
+      - dev: i2c@f1980000
+        flags: {}
+      - dev: i2c@f1990000
+        flags: {}
+      - dev: i2c@f19a0000
+        flags: {}
+      - dev: i2c@f19b0000
+        flags: {}
+      - dev: i2c@f1000000
+        flags: {}
+
+

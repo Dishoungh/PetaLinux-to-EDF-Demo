@@ -1,0 +1,142 @@
+definitions:
+    OpenAMP:
+         openamp_channel0_access_srams: &openamp_channel0_access_srams # used for access in each domain
+             - dev: psu_r5_0_atcm_global@ffe00000
+               flags: 0
+             - dev: psu_r5_0_btcm_global@ffe20000
+               flags: 0
+
+         rproc0: &rproc0
+             - start: 0x9800000
+               size: 0x60000
+               no-map: 1
+
+         rpu0vdev0vring0: &rpu0vdev0vring0
+             - start: 0x9860000
+               size: 0x4000
+               no-map: 1
+
+         rpu0vdev0vring1: &rpu0vdev0vring1
+             - start: 0x9864000
+               size: 0x4000
+               no-map: 1
+
+         rpu0vdev0buffer: &rpu0vdev0buffer
+             - start: 0x9868000
+               size: 0x40000
+               no-map: 1
+
+domains:
+    openamp_a53_0_cluster: # host in channel from a53-0
+        compatible:
+            - "openamp,domain-v1"
+        cpus:
+            - cluster: cpus_a53
+              cpumask: 0xf
+              mode:
+                 secure: true
+                 el: 0x3
+
+        os,type: linux
+        access:
+            - dev: cpus_r5_0
+              flags: {}
+            - dev: ipi7
+              flags: {}
+            - dev: ipi1
+              flags: {}
+            - dev: "/cpus-a53@0/cpu@0"
+              label: psu_cortexa53_0
+              flags: {}
+            - dev: psu_cortexa53_1
+              flags: {}
+            - dev: psu_cortexa53_2
+              flags: {}
+            - dev: psu_cortexa53_3
+              flags: {}
+            - dev: psu_r5_0_atcm_global@ffe00000
+              flags: {}
+            - dev: psu_r5_0_btcm_global@ffe20000
+              flags: {}
+            - dev: amba_pl
+            - dev: gem0
+            - dev: gem1
+            - dev: gem2
+            - dev: dwc3_1
+            - dev: sata
+            - dev: pcie
+            - dev: nand0
+            - dev: mmc@ff160000
+            - dev: "display@fd4a0000/ports"
+              label: zynqmp_dpsub
+
+        reserved-memory:
+            ranges: true
+            <<+: [ *rpu0vdev0vring1, *rpu0vdev0vring0, *rpu0vdev0buffer, *rproc0 ]
+
+        domain-to-domain:
+            compatible: openamp,domain-to-domain-v1
+            remoteproc-relation:
+                compatible: openamp,remoteproc-v2
+                remote:
+                    - openamp_r5_0_cluster
+                elfload:
+                    - [ psu_r5_0_atcm_global@ffe00000, psu_r5_0_btcm_global@ffe20000, rproc0 ]
+
+            rpmsg-relation:
+                compatible: openamp,rpmsg-v1
+                remote:
+                    - openamp_r5_0_cluster
+                carveouts:
+                     - rpu0vdev0vring0
+                     - rpu0vdev0vring1
+                     - rpu0vdev0buffer
+                mbox:
+                    - ipi7
+
+    openamp_r5_0_cluster:
+        compatible:
+            - "openamp,domain-v1"
+        cpus:
+            - cluster: cpus_r5_0
+              cpumask: 0x1
+              mode:
+              secure: true
+              cluster_cpu: psu_cortexr5_0
+        os,type: freertos
+        access:
+            - dev: psu_r5_0_atcm_global@ffe00000
+              label: psu_r5_0_atcm_global
+              flags: {}
+            - dev: psu_r5_0_btcm_global@ffe20000
+              flags: {}
+              label: psu_r5_0_btcm_global
+            - dev: ipi7
+              flags: {}
+            - dev: ipi1
+              flags: {}
+            - dev: memory@100000
+              flags: {}
+            - dev: psu_rpu
+              flags: {}
+            - dev: ttc3
+              flags: {}
+
+        reserved-memory:
+            ranges: true
+            <<+: [ *rpu0vdev0vring1, *rpu0vdev0vring0, *rpu0vdev0buffer, *rproc0 ]
+
+        domain-to-domain:
+             compatible: openamp,domain-to-domain-v1
+             rpmsg-relation:
+                 compatible: openamp,rpmsg-v1
+                 host:
+                     - openamp_a53_0_cluster
+                 mbox:
+                     - ipi1
+                 carveouts:
+                     - rpu0vdev0vring0
+                     - rpu0vdev0vring1
+                     - rpu0vdev0buffer
+
+

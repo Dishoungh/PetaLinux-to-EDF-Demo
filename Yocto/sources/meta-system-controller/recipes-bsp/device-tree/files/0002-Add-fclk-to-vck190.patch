@@ -1,0 +1,30 @@
+From 9ecaa555ad7d97185e1c1c1708e2257d61137aab Mon Sep 17 00:00:00 2001
+From: Jonathan Stroud <jonathan.stroud@amd.com>
+Date: Wed, 18 Dec 2024 14:10:15 -0700
+Subject: [PATCH] Add fclk to vck190
+
+---
+ .../kernel_dtsi/2024.2/BOARD/zynqmp-e-a2197-00-reva.dtsi   | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-e-a2197-00-reva.dtsi b/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-e-a2197-00-reva.dtsi
+index 93a1d643..c495ce4a 100644
+--- a/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-e-a2197-00-reva.dtsi
++++ b/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-e-a2197-00-reva.dtsi
+@@ -164,6 +164,13 @@
+ 		compatible = "iio-hwmon";
+ 		io-channels = <&mgtyvccaux 0>, <&mgtyvccaux 1>, <&mgtyvccaux 2>, <&mgtyvccaux 3>;
+ 	};
++
++	fclk0 {
++		status = "okay";
++		compatible = "xlnx,fclk";
++		clocks = <0x04 0x47>;
++	};
++
+ };
+ 
+ 
+-- 
+2.34.1
+

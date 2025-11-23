@@ -1,0 +1,57 @@
+################################################################################
+#
+#  AMD Embedded Development Framework configuration
+#
+################################################################################
+
+The following common machines:
+    - amd-cortexa9thf-neon-common
+    - amd-cortexa53-common
+    - amd-cortexa53-mali-common
+    - amd-cortexa72-common
+    - amd-cortexa78-common
+    - amd-cortexa78-mali-common
+
+Can build the following images:
+    - edf-linux-disk-image
+    - meta-edf-app-sdk
+    - container-app-hello-world
+    - container-devtools-edf
+
+Example:
+    $ MACHINE=amd-cortexa72-common bitbake edf-linux-disk-image
+
+A boot.bin (xilinx-bootbin) or ospi or qspi (edf-ospi, edf-qspi, kria-qspi)
+image can also be generated for the following platforms:
+
+versal-2ve-2vm:
+    - vek385-reva - versal-2ve-2vm-vek385-sdt-seg
+    - vek385-revb - versal-2ve-2vm-vek385-revb-sdt-seg
+
+versal:
+    - vek280 - versal-vek280-sdt-seg
+    - vck190 - versal-vck190-sdt-seg
+    - vmk180 - versal-vmk180-sdt-seg
+    - vpk120 - versal-vpk120-sdt-seg
+    - vrk160 - versal-vrk160-sdt-seg
+    - v80    - versal-v80-sdt-seg
+    - vm-p-m1369  - versal-vm-p-m1369-00-reva-x-prc-01-reva-sdt-seg
+
+zynqmp
+    - zcu104  - zynqmp-zcu104-sdt-full
+    - zcu111  - zynqmp-zcu111-sdt-full
+    - zcu102  - zynqmp-zcu102-sdt-full
+    - zcu106  - zynqmp-zcu106-sdt-full
+    - zc702   - zynq-zc702-sdt-full
+    - k24-sc  - zynqmp-k24-sc-sdt-base
+    - k26-smk - k26-smk-sdt
+    - k24-smk - k24-smk-sdt
+
+zynq:
+    - zc702  - zynq-zc702-sdt-full
+
+Example:
+    $ MACHINE=versal-2ve-2vm-vek385-sdt-seg bitbake edf-ospi
+    $ MACHINE=versal-vck190-sdt-seg bitbake edf-qspi
+    $ MACHINE=zynqmp-zcu104-sdt-full bitbake xilinx-bootbin
+    $ MACHINE=k26-smk-sdt bitbake kria-qspi

@@ -1,0 +1,24 @@
+args:
+    - --hw-description https://edf.amd.com/sswreleases/rel-v2025.2/sdt/2025.2/2025.2_1115_1_11150857/external/k26-smk-kv-sdt/k26-smk-kv-sdt_2025.2_1115_1_11150857.tar.gz
+    - --machine-name k26-smk-kv-sdt
+    - -g full
+    - --require-machine include/k26-smk.inc
+kconfig:
+    CONFIG_YOCTO_BBMC_CORTEXR5_0_FREERTOS: y
+machine:
+    pre:
+    post:
+        require:
+            op: 'conf/machine/include/kria-qemu-kv.inc'
+        UBOOT_DT_FILES:
+            op: '='
+            val: " zynqmp-sck-kv-g-revA.dtso zynqmp-sck-kv-g-revB.dtso "
+        DTB_FILE_NAME:task-install:pn-device-tree:linux:
+            op: '='
+            val: "${UBOOT_DTFILE_PREFIX}-zynqmp-sck-kv-g-revB.dtb"
+        DTB_FILE_NAME:task-deploy:pn-device-tree:linux:
+            op: '='
+            val: "${UBOOT_DTFILE_PREFIX}-zynqmp-sck-kv-g-revB.dtb"
+        PR:append:pn-device-tree:
+            op: '='
+            val: ".2"

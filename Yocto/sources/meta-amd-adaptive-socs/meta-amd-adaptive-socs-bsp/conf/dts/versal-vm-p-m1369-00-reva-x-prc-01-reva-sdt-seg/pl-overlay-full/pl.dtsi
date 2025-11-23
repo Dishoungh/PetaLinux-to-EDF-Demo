@@ -1,0 +1,8 @@
+/dts-v1/;
+/plugin/;
+&fpga {
+	firmware-name = "vm-p-m1369-00_base_pld.pdi";
+};
+
+&amba {
+};

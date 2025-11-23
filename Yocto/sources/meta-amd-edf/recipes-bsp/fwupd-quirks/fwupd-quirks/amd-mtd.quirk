@@ -1,0 +1,47 @@
+[MTD\VENDOR_amd&NAME_Bank-A-Space]
+Flags = no-probe
+
+[MTD\NAME_Bank-B-Space]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_Image-Recovery]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_Image-Recovery-Scratchpad]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_Image-Selector]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_Image-Selector-Backup]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_Image-Selector-Scratchpad]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_SystemReady-DT-Update-Metadata]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_SystemReady-DT-Update-Metadata-Backup]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_U-Boot-Variables]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_U-Boot-Variables-Backup]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_U-Boot-Variables-Bank-A]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_U-Boot-Variables-Bank-A-Backup]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_U-Boot-Variables-Bank-B]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_U-Boot-Variables-Bank-B-Backup]
+Flags = no-probe
+
+[MTD\VENDOR_amd&NAME_User-Scratchpad]
+Flags = no-probe

@@ -1,0 +1,13 @@
+[Unit]
+Description=BOOT.bin Firmware Update Notification Service
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=${bindir}/boot-fw-update.sh
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

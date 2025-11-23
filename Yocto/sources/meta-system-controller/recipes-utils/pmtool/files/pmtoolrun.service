@@ -1,0 +1,12 @@
+[Unit]
+Description=power management tool run 
+Requires=network-online.target
+After=network-online.target
+Wants=dfx-mgr.service
+
+[Service]
+ExecStart=/usr/bin/pmtoolrun.sh
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target

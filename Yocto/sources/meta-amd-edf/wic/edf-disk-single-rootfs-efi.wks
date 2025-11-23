@@ -1,0 +1,13 @@
+# Partitioned disk image for AMD Embedded Development Framework - EFI booted
+# Based on a total disk size of 8GB
+#
+# layout:
+#     /efi         1GB      - used for boot.bin and Arm SystemReady-compatible EFI firmware update capsules
+#     storage      1GB      - user storage (no default mount)
+#     /            6GB      - general-purpose, Yocto-built Linux user-space filesystem
+
+part  /efi       --source bootimg-efi-amd --sourceparams="loader=${EFI_PROVIDER},rootfs_uuid=${ROOTFS_PART_UUID}" --fixed-size=1G  --align 16 --fstype=vfat  --use-label  --label esp  --active  --mbr  --use-uuid  --part-type="${ESP_PART_TYPE}"  --part-name="ESP"
+part  storage                             --fixed-size=1G    --align 4  --fstype=vfat  --use-label  --label storage
+part  /          --source rootfs          --fixed-size=6G    --align 4  --fstype=ext4  --use-label  --label root --uuid="${ROOTFS_PART_UUID}"  --use-uuid --part-type="${ROOTFS_PART_TYPE}"
+
+bootloader --ptable gpt-hybrid

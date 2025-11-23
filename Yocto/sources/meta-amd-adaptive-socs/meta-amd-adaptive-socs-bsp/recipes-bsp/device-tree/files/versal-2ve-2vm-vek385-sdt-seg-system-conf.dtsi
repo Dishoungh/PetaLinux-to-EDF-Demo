@@ -1,0 +1,255 @@
+/*
+ * Temporary DT nodes for VEK385 RevA Evaluation board.
+ */
+
+/ {
+	chosen {
+		bootargs = "earlycon=pl011,mmio32,0xf1930000 console=ttyAMA1,115200";
+		stdout-path = "serial1:115200n8";
+	};
+	aliases {
+		nvmem1 = &eeprom;
+		/* Since UART0 is disabled below, so remove the unused alias dt property */
+		/delete-property/ serial0;
+	};
+	
+	/* Carving out the mem reservations for PLM, TFA, OPTEE and ISP.
+	This is a workaround, later this will be handled through domain.yaml
+	shel flow */
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* PLM region - 16MB */
+		plm_region: buffer@0 {
+			no-map;
+			reg = <0x0 0x0 0x0 0x1000000>;
+		};
+
+		/* TFA region - 6MB*/
+		tfa_region: buffer@1000000 {
+			no-map;
+			reg = <0x0 0x1000000 0x0 0x600000>;
+		};
+
+		/* TFA core region -2MB */
+		/* This node is injected into the DTB at runtime by the TF-A
+		component; leaving it commented for reference.
+		tfa_core_region: buffer@1600000 {
+			no-map;
+			reg = <0x0 0x1600000 0x0 0x200000>;
+		};*/
+
+		/* TEE region -128MB */
+		/* This node is injected into the DTB at runtime by OP-TEE OS
+		component; leaving it commented for reference.
+		optee_region:  buffer@1800000 {
+			no-map;
+			reg = <0x0 0x1800000 0x0 0x8000000>;
+		};*/
+
+		/* ISP mem reservations - 320MB */
+		rpu6_fw: rproc6@0c000000 {
+			no-map;
+			reg = <0x00 0xc000000 0x00 0x3800000>;
+		};
+		rproc_D_0_6_calib_load: rpu6_calib_load {
+			no-map;
+			reg = <0x0  0xF800000 0x0 0x28000>;
+		};
+		rproc_D_0_6_hal_mem_priv: rpu6_hal_mem_priv {
+			no-map;
+			reg = <0x0 0xF828000 0x0 0x01001000>;
+		};
+
+		rpu7_fw: rproc7@1082A000 {
+			no-map;
+			reg = <0x00 0x1082A000 0x00 0x3800000>;
+		};
+		rproc_D_1_7_calib_load: rpu7_calib_load {
+			no-map;
+			reg = <0x0 0x1402A000 0x0 0x28000>;
+		};
+		rproc_D_1_7_hal_mem_priv: rpu7_hal_mem_priv {
+			no-map;
+			reg = <0x0 0x14052000 0x0 0x01001000>;
+		};
+
+		rpu8_fw: rproc8@15054000 {
+			no-map;
+			reg = <0x00 0x15054000 0x00 0x3800000>;
+		};
+		rproc_E_0_8_calib_load: rpu8_calib_load {
+			no-map;
+			reg = <0x0 0x18854000 0x0 0x28000>;
+		};
+		rproc_E_0_8_hal_mem_priv: rpu8_hal_mem_priv {
+			no-map;
+			reg = <0x0 0x1887C000 0x0 0x01001000>;
+		};
+
+		rpu9_fw: rproc9@1987E000 {
+			no-map;
+			reg = <0x00 0x1987E000 0x00 0x3800000>;
+		};
+		rproc_E_1_9_calib_load: rpu9_calib_load {
+			no-map;
+			reg = <0x0 0x1D07E000 0x0 0x28000>;
+		};
+		rproc_E_1_9_hal_mem_priv: rpu9_hal_mem_priv {
+			no-map;
+			reg = <0x0 0x1D0A6000 0x0 0x01001000>;
+		};
+
+		isp_mbox_buffer: isp_mbox_buffer@1E0A8000 {
+			no-map;
+			reg = <0x00 0x1E0A8000 0x00 0x400000>;
+		};
+		rpu_shared_mem: rpu_shared_mem@1E4A8000 {
+			no-map;
+			reg = <0x0 0x1E4A8000 0x0 0x40000>;
+		};
+		isp_vring: vring@1fff7000 {
+			no-map;
+			reg = <0x00 0x1fff7000 0x00 0x8000>;
+		};
+		tcm_rpu6: rpu6_tcm {
+			no-map;
+			reg = <0x00 0xebb80000 0x00 0x30000>;
+		};
+		tcm_rpu7: rpu7_tcm {
+			no-map;
+			reg = <0x00 0xebbc0000 0x00 0x30000>;
+		};
+		tcm_rpu8: rpu8_tcm {
+			no-map;
+			reg = <0x00 0xebc00000 0x00 0x30000>;
+		};
+		tcm_rpu9: rpu9_tcm {
+			no-map;
+			reg = <0x00 0xebc40000 0x00 0x30000>;
+		};
+		cma_reserved_1: cma_reserved@0840000000 {
+			compatible = "shared-dma-pool";
+			reusable;
+			reg = <0x08 0x40000000 0x00 0x40000000>;
+			linux,cma-default;
+		};
+		cma_reserved_2: cma_reserved@50000000000 {
+			compatible = "shared-dma-pool";
+			reusable;
+			reg = <0x500 0x00 0x01 0x00>;
+		};
+		ddr_ch4: buffer@60000000000 {
+			no-map;
+			reg = <0x600 0x0 0x0 0x80000000>;
+		};
+	};
+
+
+	/* System-ready metadata partitions for bank0 and bank1 with uuid info*/
+	firmware {
+		fwu-mdata {
+			compatible = "u-boot,fwu-mdata-mtd";
+			fwu-mdata-store = <&flash0>;
+			mdata-parts = "SystemReady-DT Update Metadata", "SystemReady-DT Update Metadata Backup";
+			fwu-bank0 {
+				id = <0>;
+				label = "Bank A Space";
+				fwu-image0 {
+					id = <0>;
+					offset = <0>;
+					size = <0x7200000>;
+					uuid = "0b931b7e-b2f6-11ef-8565-eb65d140066b";
+				};
+			};
+			fwu-bank1 {
+				id = <1>;
+				label = "Bank B Space";
+				fwu-image0 {
+					id = <0>;
+					offset = <0>;
+					size = <0x7200000>;
+					uuid = "1243d800-b2f6-11ef-8f4f-8bddc3aa326d";
+				};
+			};
+		};
+	};
+
+/* Add remoteproc nodes required for loading isp firmware */
+	remoteproc@ebb80000 {
+		compatible = "xlnx,versal-net-r52fss";
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		xlnx,cluster-mode = <0x00>;
+		ranges = <0x00 0x00 0x00 0xebb80000 0x00 0x10000 0x00 0x10000 0x00 0xebb90000 0x00 0x8000 0x00 0x18000 0x00 0xebba0000 0x00 0x8000 0x01 0x00 0x00 0xebbc0000 0x00 0x10000 0x01 0x10000 0x00 0xebbd0000 0x00 0x8000 0x01 0x18000 0x00 0xebbe0000 0x00 0x8000>;
+
+		r52f@0 {
+			compatible = "xlnx,versal2-r52f";
+			power-domains = <&versal2_firmware 0x181100f3 &versal2_firmware 0x18318106 &versal2_firmware 0x18318107 &versal2_firmware 0x18318108>;
+			reg = <0x00 0x00 0x00 0x10000 0x00 0x10000 0x00 0x8000 0x00 0x18000 0x00 0x8000>;
+			reg-names = "r52_0a_atcm_global@eba00000\0r52_0a_btcm_global@eba10000\0r52_0a_ctcm_global@eba20000";
+			memory-region = <&rpu6_fw>;
+		};
+		r52f@1 {
+			compatible = "xlnx,versal2-r52f";
+			power-domains = <&versal2_firmware 0x181100f4 &versal2_firmware 0x18318109 &versal2_firmware 0x1831810a &versal2_firmware 0x1831810b>;
+			reg = <0x01 0x00 0x00 0x10000 0x01 0x10000 0x00 0x8000 0x01 0x18000 0x00 0x8000>;
+			reg-names = "r52_0a_atcm_global@eba00000\0r52_0a_btcm_global@eba10000\0r52_0a_ctcm_global@eba20000";
+			memory-region = <&rpu7_fw>;
+		};
+	};
+	remoteproc@ebc00000 {
+		compatible = "xlnx,versal-net-r52fss";
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		xlnx,cluster-mode = <0x00>;
+		ranges = <0x00 0x00 0x00 0xebc00000 0x00 0x10000 0x00 0x10000 0x00 0xebc10000 0x00 0x8000 0x00 0x18000 0x00 0xebc20000 0x00 0x8000 0x01 0x00 0x00 0xebc40000 0x00 0x10000 0x01 0x10000 0x00 0xebc50000 0x00 0x8000 0x01 0x18000 0x00 0xebc60000 0x00 0x8000>;
+
+		r52f@0 {
+			compatible = "xlnx,versal2-r52f";
+			power-domains = <&versal2_firmware 0x181100f5 &versal2_firmware 0x1831810c &versal2_firmware 0x1831810d &versal2_firmware 0x1831810e>;
+			reg = <0x00 0x00 0x00 0x10000 0x00 0x10000 0x00 0x8000 0x00 0x18000 0x00 0x8000>;
+			reg-names = "r52_0a_atcm_global@eba00000\0r52_0a_btcm_global@eba10000\0r52_0a_ctcm_global@eba20000";
+			memory-region = <&rpu8_fw>;
+		};
+
+		r52f@1 {
+			compatible = "xlnx,versal2-r52f";
+			power-domains = <&versal2_firmware 0x181100f6 &versal2_firmware 0x1831810f &versal2_firmware 0x18318110 &versal2_firmware 0x18318111>;
+			reg = <0x01 0x00 0x00 0x10000 0x01 0x10000 0x00 0x8000 0x01 0x18000 0x00 0x8000>;
+			reg-names = "r52_0a_atcm_global@eba00000\0r52_0a_btcm_global@eba10000\0r52_0a_ctcm_global@eba20000";
+			memory-region = <&rpu9_fw>;
+		};
+	};
+};
+
+/*
+I2C Node (i2c@f1940000) in the PS device tree
+I2C access should be disabled from APU Linux as I2C0 is allocated
+for ISP/sensor processing in the RPU firmware. This ensures I2C0 is not
+accessed by Linux and remains dedicated to RPU operation.
+*/
+&i2c0 {
+	status = "disabled";
+};
+/*
+TTC timer nodes (timer@f1ea0000 to timer@f1ed0000) in the PS device tree causing conflict with
+the RPU firmware execution during Linux boot.So disabling them to ensures successful RPU log prints
+*/
+&ttc4 {
+	status = "disabled";
+};
+
+&ttc5 {
+	status = "disabled";
+};
+
+&ttc6 {
+	status = "disabled";
+};
+
+&ttc7 {
+	status = "disabled";
+};

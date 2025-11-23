@@ -1,0 +1,87 @@
+/ {
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		cma_reserved: cma_reserved@800000000 {
+			compatible = "shared-dma-pool";
+			reusable;
+			reg = <0x8 0x0 0x0 0x80000000>;
+			linux,cma-default;
+		};
+		ddr_ch1: buffer@50000000000 {
+			no-map;
+			reg = <0x500 0x0 0x1 0x0>;
+		};
+		ddr_ch2: buffer@60000000000 {
+			no-map;
+			reg = <0x600 0x0 0x1 0x0>;
+		};
+		ddr_ch3: buffer@70000000000 {
+			no-map;
+			reg = <0x700 0x0 0x1 0x0>;
+		};
+	};
+
+	/* System-ready metadata partitions for bank0 and bank1 with uuid info */
+	firmware {
+		fwu-mdata {
+			compatible = "u-boot,fwu-mdata-mtd";
+			fwu-mdata-store = <&flash0>;
+			mdata-parts = "SystemReady-DT Update Metadata", "SystemReady-DT Update Metadata Backup";
+
+			fwu-bank0 {
+				id = <0>;
+				label = "Bank A Space";
+				fwu-image0 {
+					id = <0>;
+					offset = <0>;
+					size = <0x7200000>;
+					uuid = "0b931b7e-b2f6-11ef-8565-eb65d140066b";
+				};
+			};
+
+			fwu-bank1 {
+				id = <1>;
+				label = "Bank B Space";
+				fwu-image0 {
+					id = <0>;
+					offset = <0>;
+					size = <0x7200000>;
+					uuid = "1243d800-b2f6-11ef-8f4f-8bddc3aa326d";
+				};
+			};
+		};
+	};
+};
+
+&ospi {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	flash0: flash@0 {
+		/delete-node/ partition@0;
+		/delete-node/ partition@100000;
+		/delete-node/ partition@600000;
+		/delete-node/ partition@620000;
+		/delete-node/ partition@c00000;
+
+		partition@0 {
+			label = "spi0-boot";
+			reg = <0x00000000 0x00040000>;
+		};
+		partition@1 {
+			label = "spi0-bootenv";
+			reg = <0x00040000 0x00020000>;
+		};
+		partition@2 {
+			label = "spi0-config";
+			reg = <0x00060000 0x00020000>;
+		};
+		partition@3 {
+			label = "spi0-kernel";
+			reg = <0x00080000 0x00c00000>;
+		};
+	};
+};
+

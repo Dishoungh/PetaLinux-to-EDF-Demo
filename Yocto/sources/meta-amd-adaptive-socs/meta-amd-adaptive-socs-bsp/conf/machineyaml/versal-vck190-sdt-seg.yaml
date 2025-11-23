@@ -1,0 +1,26 @@
+args:
+    - --hw-description https://edf.amd.com/sswreleases/rel-v2025.2/sdt/2025.2/2025.2_1115_1_11150857/external/versal-vck190-sdt-seg/versal-vck190-sdt-seg_2025.2_1115_1_11150857.tar.gz
+    - --machine-name versal-vck190-sdt-seg
+    - -g full
+    - --domain-file ${LAYER_PATH_xilinx-standalone-sdt}/conf/domainyaml/openamp-overlay-versal.yaml
+kconfig:
+    CONFIG_YOCTO_BBMC_LINUX_DTSI: ${LAYER_PATH_xilinx-virtualization}/recipes-bsp/device-tree/files/versal-xen.dtsi
+        ${BSPLAYERDIR_amd-adaptive-socs-bsp}/recipes-bsp/device-tree/files/platform-misc.dtsi
+machine:
+    pre:
+    post:
+        include:
+            comment: "Enable meta-xilinx-imgrcvry if available"
+            op: 'conf/enable-xilinx-imgrcvry.conf'
+        QB_MEM:
+            op: '='
+            val: "-m 8G"
+        QEMU_HW_DTB_PS:
+            op: '='
+            val: "${QEMU_HW_DTB_PATH}/board-versal-ps-vck190.dtb"
+        QEMU_HW_DTB_PMC:
+            op: '='
+            val: "${QEMU_HW_DTB_PATH}/board-versal-pmc-virt.dtb"
+        QB_ROOTFS_OPT:
+            op: '='
+            val: "-drive if=sd,index=1,file=@ROOTFS@,format=raw"

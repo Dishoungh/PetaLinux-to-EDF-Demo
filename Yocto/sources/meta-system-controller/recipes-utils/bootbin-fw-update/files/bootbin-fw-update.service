@@ -1,0 +1,11 @@
+[Unit]
+Description=BOOT.BIN Update Status
+After=basic.target
+
+[Service]
+ExecStart=/usr/bin/bootbin-fw-update.sh
+ExecStartPre=/bin/echo "BOOT.BIN Update Status"
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

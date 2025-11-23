@@ -1,0 +1,19 @@
+args:
+    - --hw-description https://edf.amd.com/sswreleases/rel-v2025.2/sdt/2025.2/2025.2_1115_1_11150857/external/zynqmp-k24-sc-sdt-base/zynqmp-k24-sc-sdt-base_2025.2_1115_1_11150857.tar.gz
+    - --machine-name zynqmp-k24-sc-sdt-base
+    - -g full
+kconfig:
+
+machine:
+    pre:
+    post:
+        include:
+            comment: "Enable meta-xilinx-imgrcvry if available"
+            op: 'conf/enable-xilinx-imgrcvry.conf'
+        ENABLE_XEN_DTSI:zynqmp-k24-sc-sdt-base:
+            comment: "This prevents inclusion of XEN dtsi into system.dtb"
+            op: '='
+            val: ""
+        ENABLE_XEN_QEMU_DTSI:zynqmp-k24-sc-sdt-base:
+            op: '='
+            val: ""

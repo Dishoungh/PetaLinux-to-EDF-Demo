@@ -1,0 +1,12 @@
+[Unit]
+Description=system_controller_app
+After=xvc.service hw_server.service cs_server.service
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/sc_appd
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target

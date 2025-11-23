@@ -1,0 +1,74 @@
+From 65369f92438c86aeefe25fb77c538ae62e5a332b Mon Sep 17 00:00:00 2001
+From: Jonathan Stroud <jonathan.stroud@amd.com>
+Date: Wed, 18 Dec 2024 10:41:15 -0700
+Subject: [PATCH] Add eeprom labels for SC dts
+
+Signed-off-by: Jonathan Stroud <jonathan.stroud@amd.com>
+---
+ .../kernel_dtsi/2024.2/BOARD/zynqmp-e-a2197-00-reva.dtsi  | 8 ++++++--
+ .../data/kernel_dtsi/2024.2/BOARD/zynqmp-sc-revb.dtsi     | 1 +
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-e-a2197-00-reva.dtsi b/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-e-a2197-00-reva.dtsi
+index 2685e9ab..93a1d643 100644
+--- a/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-e-a2197-00-reva.dtsi
++++ b/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-e-a2197-00-reva.dtsi
+@@ -21,7 +21,7 @@
+ 		i2c0 = &i2c0;
+ 		i2c1 = &i2c1;
+ 		mmc0 = &sdhci1;
+-		nvmem0 = &eeprom;
++		nvmem0 = &eeprom_cc;
+ 		nvmem1 = &eeprom_ebm;
+ 		nvmem2 = &eeprom_fmc1;
+ 		nvmem3 = &eeprom_fmc2;
+@@ -520,8 +520,9 @@
+ 			#size-cells = <0>;
+ 			reg = <0>;
+ 			/* Use for storing information about SC board */
+-			eeprom: eeprom@54 { /* u34 - m24128 16kB */
++			eeprom_cc: eeprom@54 { /* u34 - m24128 16kB */
+ 				compatible = "st,24c128", "atmel,24c128";
++				label = "eeprom_cc";
+ 				reg = <0x54>; /* 0x5c too */
+ 			};
+ 			si570_ref_clk: clock-generator@5d { /* u32 */
+@@ -537,6 +538,7 @@
+ 			/* and connector J212D */
+ 			eeprom_ebm: eeprom@52 { /* x-ebm module */
+ 				compatible = "st,24c128", "atmel,24c128";
++				label = "eeprom_ebm";
+ 				reg = <0x52>;
+ 			};
+ 		};
+@@ -548,6 +550,7 @@
+ 			/* expected eeprom 0x50 FMC cards */
+ 			eeprom_fmc1: eeprom@50 {
+ 				compatible = "st,24c128", "atmel,24c128";
++				label = "eeprom_fmc1";
+ 				reg = <0x50>;
+ 			};
+ 		};
+@@ -559,6 +562,7 @@
+ 			/* expected eeprom 0x50 FMC cards */
+ 			eeprom_fmc2: eeprom@50 {
+ 				compatible = "st,24c128", "atmel,24c128";
++				label = "eeprom_fmc2";
+ 				reg = <0x50>;
+ 			};
+ 		};
+diff --git a/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-sc-revb.dtsi b/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-sc-revb.dtsi
+index 74462e9c..1b66ae74 100644
+--- a/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-sc-revb.dtsi
++++ b/device_tree/data/kernel_dtsi/2024.2/BOARD/zynqmp-sc-revb.dtsi
+@@ -163,6 +163,7 @@
+ 	/* Use for storing information about SC board */
+ 	eeprom: eeprom@54 { /* u34 - m24128 16kB */
+ 		compatible = "st,24c128", "atmel,24c128";
++		label = "eeprom_cc";
+ 		reg = <0x54>; /* & 0x5c */
+ 		bootph-all;
+ 	};
+-- 
+2.34.1
+

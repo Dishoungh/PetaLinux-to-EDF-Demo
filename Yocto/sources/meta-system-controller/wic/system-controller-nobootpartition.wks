@@ -1,0 +1,3 @@
+part  /  --source rootfs  --fstype=ext4  --part-name rootfsA  --use-label  --label rootfsA  --active  --align 4  --part-type b921b045-1df0-41c3-af44-4c6f280d3fae
+
+bootloader  --ptable gpt

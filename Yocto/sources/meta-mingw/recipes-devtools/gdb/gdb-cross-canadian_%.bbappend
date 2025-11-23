@@ -1,0 +1,7 @@
+EXEEXT:sdkmingw32 = ".exe"
+DEPENDS:remove:sdkmingw32 = "nativesdk-ncurses nativesdk-readline nativesdk-python"
+RDEPENDS:${PN}:remove:sdkmingw32 = "nativesdk-python-core nativesdk-python-lang nativesdk-python-re nativesdk-python-codecs nativesdk-python-netclient"
+EXTRA_OECONF:append:sdkmingw32 = " --without-curses --without-system-readline --with-python=no"
+PACKAGECONFIG:remove:sdkmingw32 = "readline"
+PACKAGECONFIG:remove:sdkmingw32 = "python"
+PACKAGECONFIG:remove:sdkmingw32 = "debuginfod"

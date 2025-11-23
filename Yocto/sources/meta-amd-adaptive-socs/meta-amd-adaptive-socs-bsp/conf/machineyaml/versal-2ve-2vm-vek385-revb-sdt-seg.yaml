@@ -1,0 +1,52 @@
+args:
+    - --hw-description https://edf.amd.com/sswreleases/rel-v2025.2/sdt/2025.2/2025.2_1115_1_11150857/external/versal-2ve-2vm-vek385-revb-sdt-seg/versal-2ve-2vm-vek385-revb-sdt-seg_2025.2_1115_1_11150857.tar.gz
+    - --machine-name versal-2ve-2vm-vek385-revb-sdt-seg
+    - -g full
+    - --domain-file ${LAYER_PATH_xilinx-standalone-sdt}/conf/domainyaml/openamp-overlay-versal-2ve-2vm.yaml
+
+kconfig:
+    CONFIG_YOCTO_BBMC_CORTEXR52_0_ZEPHYR: y
+    CONFIG_YOCTO_BBMC_CORTEXR52_1_BAREMETAL: y
+    CONFIG_YOCTO_BBMC_MICROBLAZE_RISCV_ASU: n
+    CONFIG_SUBSYSTEM_TF-A_SERIAL_SERIAL1_SELECT: y
+    CONFIG_SUBSYSTEM_SERIAL_TF-A_IP_NAME: 'pl011_1'
+    CONFIG_SUBSYSTEM_OP-TEE_SERIAL_SERIAL1_SELECT: y
+    CONFIG_SUBSYSTEM_SERIAL_OP-TEE_IP_NAME: '1'
+    CONFIG_SUBSYSTEM_OPTEE: y
+    CONFIG_SUBSYSTEM_TF-A_MEMORY_SETTINGS: y
+    CONFIG_SUBSYSTEM_TF-A_MEM_BASE: '0x1600000'
+    CONFIG_SUBSYSTEM_TF-A_MEM_SIZE: '0x200000'
+    CONFIG_SUBSYSTEM_UBOOT_APPEND_BASEADDR: n
+machine:
+    pre:
+        UBOOT_ENTRYPOINT:
+            op: '?='
+            val: '0x20200000'
+        UBOOT_LOADADDRESS:
+            op: '?='
+            val: '0x20200000'
+    post:
+        include:
+            comment: "Enable meta-xilinx-imgrcvry if available"
+            op: 'conf/enable-xilinx-imgrcvry.conf'
+        QEMU_HW_DTB_PS:
+            op: '='
+            val: "${QEMU_HW_DTB_PATH}/board-versal2-psxc-vek385-revB.dtb"
+        QEMU_HW_BOOT_MODE:
+            op: '='
+            val: "8"
+        QEMU_HW_SERIAL:
+            op: '='
+            val: "-serial null -serial null -serial null -serial mon:stdio"
+        QEMU_HW_OSPI_FILE:
+            op: '='
+            val: "qemu-ospi-${MACHINE}.bin"
+        QB_OPT_APPEND:append:
+            op: ':='
+            val: " -drive file=@DEPLOY_DIR_IMAGE@/${QEMU_HW_OSPI_FILE},if=mtd,format=raw,index=0"
+        QB_DEFAULT_FSTYPE:
+            op: '='
+            val: "wic.ufs"
+        QB_ROOTFS_OPT:
+            op: '='
+            val: "-device scsi-hd,drive=d1,bus=scsi.0,channel=0,scsi-id=0,lun=0,logical_block_size=4096,physical_block_size=4096 -drive file=@ROOTFS@,if=none,id=d1,format=raw"

@@ -1,0 +1,12 @@
+[Unit]
+Description=System Controller USB gadget
+RequiresMountsFor=/sys/kernel/config
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/usb_gadget_setup.sh
+ExecStop=/usr/sbin/usb_gadget_remove.sh
+
+[Install]
+WantedBy=sysinit.target

@@ -1,0 +1,14 @@
+[Unit]
+Description=Enable hw_server
+After=xvc.service
+PartOf=xvc.service
+
+[Service]
+Type=simple
+Restart=always
+NotifyAccess=all
+ExecStart=/opt/labtools/bin/hw_server -e "set auto-open-servers xilinx-xvc:127.0.0.1:2542" -e "set always-open-jtag 1"
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target

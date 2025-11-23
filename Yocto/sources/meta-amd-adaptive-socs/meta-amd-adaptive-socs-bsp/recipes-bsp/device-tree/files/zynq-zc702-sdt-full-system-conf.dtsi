@@ -1,0 +1,10 @@
+/*
+ * Temporary DT node for zc702 board.
+ */
+
+/ {
+        chosen {
+                bootargs = "earlycon";
+                stdout-path = "serial0:115200n8";
+        };
+};

@@ -1,0 +1,1 @@
+require qemu-alt.inc

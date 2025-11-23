@@ -1,0 +1,11 @@
+[Unit]
+Description=scweb run 
+After=system_controller.service
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/scwebrun.sh
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target
