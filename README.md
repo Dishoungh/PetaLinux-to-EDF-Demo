@@ -183,15 +183,6 @@ After creating my custom layer, I edit the layer.conf to add dependencies and im
 
 ### U-Boot
 
-What I want to do is, without doing anything, generate the images I'm looking for:
-- BOOT.BIN
-    - Includes the First Stage Bootloader (FSBL), Second Stage Bootloader (U-Boot), Device Tree Blob (DTB), Power Management Unit Firmware (PMUFW), and FPGA bitstream (BIT) to load the programmable logic
-- boot.scr
-    - A bootscript for U-Boot to locate the FIT image and load it in memory
-- image.ub
-    - The FIT image the contains the Device Tree Blob (DTB), compressed kernel image, and rootfs CPIO archive
-    - **The ROOTFS will be bundled with the kernel image as an INITRAMFS image**
-
 First, I want to inject my own U-Boot script. From what I can see, `u-boot-xlnx-edf` only supports SD boot. For my case, I need to configure the boot.scr to boot an FIT image from either SD or QSPI in specified offsets.
 
 - `mkdir -p ../sources/meta-custom/recipes-bsp/u-boot/files`
